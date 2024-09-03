@@ -7,7 +7,11 @@ import swaggerUI from "swagger-ui-express"
 const app = express();
 app.use(express.json());
 connectDB();
-app.use("api/" , router)
+app.use("api/" , router);
+
+app.get('/ready', function (req, res) {
+    res.send('{ "response": " Great!, It works!" }');
+});
 
 // const options = {
 //   definition : {
