@@ -1,7 +1,10 @@
 import express from "express"
-import { addservice, countservicesbystatus, deleteservice, getservice, getservicebyddescription, getservicebyid, getservicebypage, getservicebysdescription, getservicebytype, updateservice } from "./serviceController.js"
+import { addservice, 
+  countservicesbystatus,
+   deleteservice,
+    getservice , getservicebyid,  updateservice  , exampletest} from "./serviceController.js"
 
-const router = express.Router()
+const router = express.Router({ mergeParams: true })
 /*
 * @swagger
 components:
@@ -22,14 +25,15 @@ components:
 */
 
 
-router.get("/getservice" , getservice ) 
+router.get("/getservice/:page" , getservice ) 
+router.get("/test/:test" , exampletest)
 router.get("/countservice" , countservicesbystatus )
 router.get("/getservicebyid" , getservicebyid)
-router.get("/getservicebytype" ,getservicebytype )
-router.get("/getservicebypage" ,getservicebypage )
-router.get("/getservicebyddesc" ,getservicebyddescription )
-router.get("/getservicebyddesc" , getservicebysdescription)
-router.post("/addservice" , addservice)
+// router.get("/getservicebytype" ,getservicebytype )
+// router.get("/getservicebypage" ,getservicebypage )
+// router.get("/getservicebyddesc" ,getservicebyddescription )
+// router.get("/getservicebyddesc" , getservicebysdescription)
+router.post("/addservice/" , addservice)
 router.patch("/updateservice" , updateservice)
 router.delete("/deleteservice" , deleteservice)
 

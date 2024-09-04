@@ -7,33 +7,16 @@ import swaggerUI from "swagger-ui-express"
 const app = express();
 app.use(express.json());
 connectDB();
-app.use("api/" , router);
+app.use("/api" , router);
+
 
 app.get('/ready', function (req, res) {
     res.send('{ "response": " Great!, It works!" }');
 });
 
-// const options = {
-//   definition : {
-//     openpi : "3.0.0" , 
-//     info : {
-//       title : "Service-API", 
-//       version : "1.0.0" , 
-//       description : "api"
-//     }, 
-//     servers : [
-//       {
-//         url : "https://localhost:3000"
-//       }
-//     ] ,
-//   },
-//   apis : ["./routes.js"]
-// }
 
-// const specs = swaggerJSDoc("./swagger-output.json")
-// app.use("/api-docs" , swaggerUI.serve , swaggerUI.setup(specs))
 
 const PORT = 3000;
-app.listen(3000, () => {
+app.listen(PORT, () => {
   console.log(`listening on port ${PORT}`);
 });
