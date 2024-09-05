@@ -1,4 +1,4 @@
-const cors = require('cors');
+import cors from "cors";
 import express from "express";
 import connectDB from "./db.js";
 import router from "./serviceRoutes.js";
