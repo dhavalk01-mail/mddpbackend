@@ -1,8 +1,11 @@
 import express from "express"
-import { addservice, 
+import {
+  addService,
   countservicesbystatus,
-   deleteservice,
-    getservice , getservicebyid,  updateservice  , exampletest} from "./serviceController.js"
+  deleteservice,
+  updateservice,
+  getServices
+} from "./serviceController.js"
 
 const router = express.Router({ mergeParams: true })
 /*
@@ -25,17 +28,20 @@ components:
 */
 
 
-router.get("/getservice/:page" , getservice ) 
-router.get("/test/:test" , exampletest)
+router.get('/getServices/:id', getServices)
+router.get('/getServices', getServices)
+router.post("/addService", addService)
+
+// router.get("/getservice/:page" , getservice ) 
+// router.get("/test/:test" , exampletest)
 router.get("/countservice" , countservicesbystatus )
-router.get("/getservicebyid" , getservicebyid)
+// router.get("/getservicebyid" , getservicebyid)
 // router.get("/getservicebytype" ,getservicebytype )
 // router.get("/getservicebypage" ,getservicebypage )
 // router.get("/getservicebyddesc" ,getservicebyddescription )
 // router.get("/getservicebyddesc" , getservicebysdescription)
-router.post("/addservice/" , addservice)
-router.patch("/updateservice" , updateservice)
-router.delete("/deleteservice" , deleteservice)
+router.patch("/updateservice", updateservice)
+router.delete("/deleteservice", deleteservice)
 
 
 export default router

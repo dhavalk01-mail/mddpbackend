@@ -3,10 +3,10 @@ import service from "./serviceModel.js";
 import zod, { array } from "zod";
 
 const schema = zod.object({
-  title: zod.string(),
+  title: zod.string().trim(),
   short_description: zod.string(),
   detailed_description: zod.string(),
-  service_category: zod.string(),
+  service_category: zod.array(zod.string()),
   endpoint: zod.string(),
   git_endpoint: zod.string(),
   helm_endpoint: zod.string(),
@@ -18,12 +18,13 @@ const exampletest = async (req, res) => {
   const test = req.params.test;
   console.log(test);
 };
-const addservice = async (req, res) => {
+const addService = async (req, res) => {
   const newSer = schema.safeParse(req.body);
 
   if (!newSer.success) {
     return res.status(404).json({
-      msg: "incorrect inputs",
+      err: "incorrect inputs",
+      msg: newSer.error.issues
     });
   }
 
@@ -37,9 +38,12 @@ const addservice = async (req, res) => {
     helm_endpoint: req.body.helm_endpoint,
     dependent_service: req.body.dependent_service,
     tags: req.body.tags,
+    status: req.body.status,
+    lead_instructor: req.body.lead_instructor,
+    developers: req.body.developers
   });
-  const serviceID = newService._id;
 
+  const serviceID = newService._id;
   return res.json({ msg: `service created with id = ${serviceID} ` });
 };
 
@@ -48,6 +52,9 @@ const getservicebyid = async (req, res) => {
   const reqSer = await service.findById(id);
   return res.json({ reqSer });
 };
+
+
+
 const getservice = async (req, res) => {
   const page = parseInt(req.params.page);
   let skip;
@@ -83,7 +90,7 @@ const getservice = async (req, res) => {
     pages: page == 0 ? "all" : page,
     currentPage: page == 0 ? "all" : page,
     totalServ: totalServ,
-    totalP : totalP
+    totalP: totalP
   });
 };
 
@@ -98,7 +105,7 @@ const updateservice = async (req, res) => {
       msg: "error while update service",
     });
   }
-   res.json({ msg: "task done" });
+  res.json({ msg: "task done" });
 
 
 
@@ -131,18 +138,89 @@ const countservicesbystatus = async (req, res) => {
   }
 };
 
+
+/*
+* modified by Dhaval 06-09
+*/
+
+// generate code for /getServices with pagination, search and filter
+const getServices = async (req, res) => {
+  try {
+    if (req.params.id) {
+      const reqSer = await service.findById(req.params.id);
+      if (!reqSer) {
+        return res.status(404).json({ message: 'Service not found' });
+      }
+      res.json(reqSer);
+    } else {
+
+      // Pagination: page number and limit per page (default 5)
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 5;
+      const skip = (page - 1) * limit;
+
+      // Search query
+      const searchQuery = req.query.search || '';
+
+      // Fliter options
+      const serviceCategory = req.query.service_category || '';
+      const status = req.query.status || '';
+
+      // Build query object
+      const query = {};
+
+      //Search query in title, short_description, description
+      if (searchQuery) {
+        query.$or = [
+          { title: { $regex: searchQuery, $options: 'i' } },
+          { short_description: { $regex: searchQuery, $options: 'i' } },
+          { detailed_description: { $regex: searchQuery, $options: 'i' } }
+        ];
+      }
+
+      // Filter by service_category
+      if (serviceCategory) {
+        query.service_category = serviceCategory;
+      }
+
+      // Filter by status
+      if (status) {
+        query.status = status;
+      }
+
+      // Get total count of services
+      const totalServices = await service.countDocuments(query);
+
+      // Get services with pagination and filter
+      const services = await service.find(query).limit(limit).skip(skip);
+      res.json({
+        totalServices,
+        currentPage: page,
+        totalPages: Math.ceil(totalServices / limit),
+        services
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
 export {
-  getservicebyid,
+
+  getServices,
+  // getservicebyid,
   //   getservicebytype,
   deleteservice,
   updateservice,
-  getservice,
-  addservice,
+  // getservice,
+  addService,
 
   //   getservicebypage,
   //   countservicesbystatus,
   //   getservicebyddescription,
   //   getservicebysdescription,
   countservicesbystatus,
-  exampletest,
+  // exampletest,
+
 };
