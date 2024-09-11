@@ -1,6 +1,5 @@
-import { log } from "console";
-import service from "./serviceModel.js";
-import zod, { array } from "zod";
+import Service from "./serviceModel.js";
+import zod from "zod";
 
 const schema = zod.object({
   title: zod.string().trim(),
@@ -14,129 +13,50 @@ const schema = zod.object({
   dependent_service: zod.array(zod.string()),
   tags: zod.array(zod.string()),
 });
-const exampletest = async (req, res) => {
-  const test = req.params.test;
-  console.log(test);
-};
-const addService = async (req, res) => {
-  const newSer = schema.safeParse(req.body);
 
-  if (!newSer.success) {
-    return res.status(404).json({
-      err: "incorrect inputs",
-      msg: newSer.error.issues
-    });
-  }
-
-  const newService = await service.create({
-    title: req.body.title,
-    short_description: req.body.short_description,
-    detailed_description: req.body.detailed_description,
-    service_category: req.body.service_category,
-    git_endpoint: req.body.git_endpoint,
-    endpoint: req.body.endpoint,
-    helm_endpoint: req.body.helm_endpoint,
-    dependent_service: req.body.dependent_service,
-    tags: req.body.tags,
-    status: req.body.status,
-    lead_instructor: req.body.lead_instructor,
-    developers: req.body.developers
-  });
-
-  const serviceID = newService._id;
-  return res.json({ msg: `service created with id = ${serviceID} ` });
-};
-
-const getservicebyid = async (req, res) => {
-  const id = req.headers.id;
-  const reqSer = await service.findById(id);
-  return res.json({ reqSer });
-};
+// const updateservice = async (req, res) => {
+//   const id = req.headers.id;
+//   const updServ = req.body;
+//   const updatedServ = await service.findByIdAndUpdate(id, {
+//     $set: updServ,
+//   });
+//   if (!updatedServ) {
+//     return res.status(404).json({
+//       msg: "error while update service",
+//     });
+//   }
+//   res.json({ msg: "task done" });
 
 
 
-const getservice = async (req, res) => {
-  const page = parseInt(req.params.page);
-  let skip;
-  let limit;
-  if (page != 0) {
-    limit = 5;
-    skip = (page - 1) * limit;
-  } else {
-    skip = 0;
-    limit = 0;
-  }
-  let filter = {};
-  if (req.headers.service_category) {
-    filter.service_category = req.headers.service_category;
-  }
-  if (req.headers.ddescription) {
-    filter.detailed_description = req.headers.ddescription;
-  }
-  if (req.headers.sdescription) {
-    filter.short_description = req.headers.sdescription;
-  }
+// };
 
-  const services = await service.find(filter).limit(limit).skip(skip);
-  const totalServ = await service.countDocuments();
-  const totalP = Math.ceil(totalServ / limit);
-  if (!services) {
-    return res.status(404).json({
-      msg: "no services found",
-    });
-  }
-  return res.json({
-    services,
-    pages: page == 0 ? "all" : page,
-    currentPage: page == 0 ? "all" : page,
-    totalServ: totalServ,
-    totalP: totalP
-  });
-};
+// const deleteservice = (req, res) => {
+//   const id = req.headers.id;
 
-const updateservice = async (req, res) => {
-  const id = req.headers.id;
-  const updServ = req.body;
-  const updatedServ = await service.findByIdAndUpdate(id, {
-    $set: updServ,
-  });
-  if (!updatedServ) {
-    return res.status(404).json({
-      msg: "error while update service",
-    });
-  }
-  res.json({ msg: "task done" });
+//   const updatedServ = service.findByIdAndDelete(id);
+//   if (!updatedServ) {
+//     return res.status(404).json({
+//       msg: "error while deleting service",
+//     });
+//   }
+//   return res.json({ msg: "task done" });
+// };
 
+// const countservicesbystatus = async (req, res) => {
+//   const status = req.params.status;
 
-
-};
-
-const deleteservice = (req, res) => {
-  const id = req.headers.id;
-
-  const updatedServ = service.findByIdAndDelete(id);
-  if (!updatedServ) {
-    return res.status(404).json({
-      msg: "error while deleting service",
-    });
-  }
-  return res.json({ msg: "task done" });
-};
-
-const countservicesbystatus = async (req, res) => {
-  const status = req.params.status;
-
-  const documents = service.countDocuments({ status: status });
-  if (!documents) {
-    return res.json({
-      msg: "No services exist for the status",
-    });
-  } else {
-    return res.json({
-      count: `The number of services for status : ${status} are ${documents} `,
-    });
-  }
-};
+//   const documents = service.countDocuments({ status: status });
+//   if (!documents) {
+//     return res.json({
+//       msg: "No services exist for the status",
+//     });
+//   } else {
+//     return res.json({
+//       count: `The number of services for status : ${status} are ${documents} `,
+//     });
+//   }
+// };
 
 
 /*
@@ -147,7 +67,7 @@ const countservicesbystatus = async (req, res) => {
 const getServices = async (req, res) => {
   try {
     if (req.params.id) {
-      const reqSer = await service.findById(req.params.id);
+      const reqSer = await Service.findById(req.params.id);
       if (!reqSer) {
         return res.status(404).json({ message: 'Service not found' });
       }
@@ -156,7 +76,8 @@ const getServices = async (req, res) => {
 
       // Pagination: page number and limit per page (default 5)
       const page = parseInt(req.query.page) || 1;
-      const limit = parseInt(req.query.limit) || 5;
+      const limitQuery = req.query.limit;
+      const limit = limitQuery === 'all' ? 0 : parseInt(req.query.limit) || 5;
       const skip = (page - 1) * limit;
 
       // Search query
@@ -189,14 +110,18 @@ const getServices = async (req, res) => {
       }
 
       // Get total count of services
-      const totalServices = await service.countDocuments(query);
+      const totalServices = await Service.countDocuments(query);
 
       // Get services with pagination and filter
-      const services = await service.find(query).limit(limit).skip(skip);
+      const services = await Service
+                                    .find(query)
+                                    .limit(limit)
+                                    .skip(skip)
+                                    .sort({ createdAt: -1});
       res.json({
         totalServices,
-        currentPage: page,
-        totalPages: Math.ceil(totalServices / limit),
+        currentPage: limitQuery === 'all' ? 1 : page,
+        totalPages: limitQuery === 'all' ? 1 : Math.ceil(totalServices / limit),
         services
       });
     }
@@ -206,21 +131,53 @@ const getServices = async (req, res) => {
 };
 
 
+const addService = async (req, res) => {
+  const newSer = schema.safeParse(req.body);
+
+  if (!newSer.success) {
+    return res.status(404).json({
+      err: "incorrect inputs",
+      msg: newSer.error.issues
+    });
+  }
+
+  const newService = await Service.create({
+    title: req.body.title,
+    short_description: req.body.short_description,
+    detailed_description: req.body.detailed_description,
+    service_category: req.body.service_category,
+    git_endpoint: req.body.git_endpoint,
+    endpoint: req.body.endpoint,
+    helm_endpoint: req.body.helm_endpoint,
+    dependent_service: req.body.dependent_service,
+    tags: req.body.tags,
+    status: req.body.status,
+    lead_instructor: req.body.lead_instructor,
+    developers: req.body.developers
+  });
+
+  const serviceID = newService._id;
+  return res.json({ msg: `service created with id = ${serviceID} ` });
+};
+
+
 export {
 
   getServices,
+  addService,
+  
   // getservicebyid,
   //   getservicebytype,
-  deleteservice,
-  updateservice,
+  // deleteservice,
+  // updateservice,
   // getservice,
-  addService,
+  
 
   //   getservicebypage,
   //   countservicesbystatus,
   //   getservicebyddescription,
   //   getservicebysdescription,
-  countservicesbystatus,
+  // countservicesbystatus,
   // exampletest,
 
 };
