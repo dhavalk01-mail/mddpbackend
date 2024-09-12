@@ -1,7 +1,7 @@
 import cors from "cors";
 import express from "express";
-import connectDB from "./db.js";
-import router from "./serviceRoutes.js";
+import connectDB from "./src/config/db.js";
+import router from "./src/routes/serviceRoutes.js";
 import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUI from "swagger-ui-express"
 
