@@ -67,8 +67,8 @@ const getServices = async (req, res) => {
       const searchQuery = req.query.search || '';
 
       // Fliter options
-      const serviceCategory = req.query.service_category || '';
-      const status = req.query.status || '';
+      const serviceCategory = req.query.service_category ? req.query.service_category.split(',') : [];
+      const status = req.query.status ? req.query.status.split(',') : [];
       const tags = req.query.tags ? req.query.tags.split(',') : [];
 
       // Build query object
@@ -84,13 +84,13 @@ const getServices = async (req, res) => {
       }
 
       // Filter by service_category
-      if (serviceCategory) {
-        query.service_category = serviceCategory;
+      if (serviceCategory.length > 0) {
+        query.service_category = { $in: serviceCategory };
       }
 
       // Filter by status
-      if (status) {
-        query.status = status;
+      if (status.length > 0) {
+        query.status = { $in: status };
       }
 
       // Filter by tags (if tags are provided)
