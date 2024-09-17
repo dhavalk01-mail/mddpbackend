@@ -150,13 +150,46 @@ const addService = async (req, res) => {
   return res.json({ msg: `service created with id = ${serviceID} ` });
 };
 
+const countServiceByStatus = async (req, res) => {
+  const query = {};
+  try {
+    // Get Subscription by ID
+    const status = req.query.status || '';
+    
+    if (status) {
+      
+      query.status = status;
+      const totalServices = await Service.countDocuments(query);
+      //console.log(query);
+      if (!totalServices) {
+        return res.status(404).json({ message: 'No Service found' });
+      }
+      res.json({
+        totalServices
+      });
+    } else {
+
+      // Get all Subscriptions
+      const totalServices = await Service.countDocuments(query);
+        
+      res.json({
+        totalServices
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+
+};
+
 
 export {
 
   getServices,
   addService,
   updateService,
-  deleteService
+  deleteService,
+  countServiceByStatus
   
   // getservicebyid,
   //   getservicebytype,
