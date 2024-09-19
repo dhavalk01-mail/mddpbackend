@@ -2,35 +2,47 @@ import Subscription from "../models/subscriptionModel.js";
 import zod from "zod";
 
 const schema = zod.object({
-  userId: zod.string(), 
+  userId: zod.string(),
   serviceId: zod.string(),
 });
 
 const addSubscription = async (req, res) => {
-  console.log(req.body)
   const newSub = schema.safeParse(req.body);
 
   if (!newSub.success) {
-    return res.status(404).json({
+    return res.status(400).json({
       err: "incorrect inputs",
       msg: newSub.error.issues
     });
   }
 
-  const newSubscription = await Subscription.create({
+  // first check if the subscription already exists
+  const existingSubscription = await Subscription.findOne({
     userId: req.body.userId,
     serviceId: req.body.serviceId,
   });
-
-  const subscriptionID = newSubscription._id;
-  return res.json({ msg: `subscription created with id = ${subscriptionID} ` });
+  if (existingSubscription) {
+    return res.status(400).json({ msg: "Subscription already exists" });
+  } else {
+    // create a record in the database
+    try {
+      const newSubscription = await Subscription.create({
+        userId: req.body.userId,
+        serviceId: req.body.serviceId,
+      });
+      // const subscriptionID = newSubscription._id;
+      return res.status(200).json({ msg: "Subscription added successfully" });
+    } catch (error) {
+      return res.status(500).json({ msg: error.message });
+    }
+  }
 };
 
 const getSubscription = async (req, res) => {
   try {
     // Get Subscription by ID
     if (req.params.id) {
-      const reqSer = await Subscription.find( {userId: req.params.id});
+      const reqSer = await Subscription.find({ userId: req.params.id });
       if (!reqSer) {
         return res.status(404).json({ message: 'Subscription not found' });
       }
@@ -39,16 +51,17 @@ const getSubscription = async (req, res) => {
 
       // Get all Subscriptions
       const subscription = await Subscription.aggregate([
-        { $lookup:
-           {
-             from: 'service',
-             localField: '_id',
-             foreignField: 'serviceId',
-             as: 'serviceDetails'
-           }
-         }
-        ])
-        
+        {
+          $lookup:
+          {
+            from: 'service',
+            localField: '_id',
+            foreignField: 'serviceId',
+            as: 'serviceDetails'
+          }
+        }
+      ])
+
       res.json({
         subscription
       });
@@ -58,6 +71,6 @@ const getSubscription = async (req, res) => {
   }
 };
 export {
-    addSubscription,
-    getSubscription
+  addSubscription,
+  getSubscription
 };
