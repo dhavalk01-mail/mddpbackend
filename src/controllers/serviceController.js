@@ -50,7 +50,7 @@ const deleteService = async (req, res) => {
 const getServices = async (req, res) => {
   try {
     if (req.params.id) {
-      const reqSer = await Service.findById(req.params.id);
+      const reqSer = await Service.findById(req.params.id).populate('dependent_service');
       if (!reqSer) {
         return res.status(404).json({ message: 'Service not found' });
       }

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { type } from "os";
 
 const serviceSchema = new mongoose.Schema(
   {
@@ -13,7 +14,12 @@ const serviceSchema = new mongoose.Schema(
       type: String,
       enum: ["Active", "Under Development", "Ideation", "Archive"]
     },
-    dependent_service: [String],
+    dependent_service: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Service"
+      }
+    ], // Array of 
     tags: [String],
     lead_instructor: String,
     developers: [String],
@@ -25,5 +31,5 @@ const serviceSchema = new mongoose.Schema(
   { timestamps: true },
   { versionKey: false });
 
-const service = mongoose.model("service", serviceSchema);
+const service = mongoose.model("Service", serviceSchema);
 export default service;
