@@ -16,7 +16,11 @@ const serviceSchema = new mongoose.Schema(
     dependent_service: [String],
     tags: [String],
     lead_instructor: String,
-    developers: [String]
+    developers: [String],
+    is_featured: {
+      type: Boolean,
+      default: false
+    },
   },
   { timestamps: true },
   { versionKey: false });

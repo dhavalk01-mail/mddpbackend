@@ -151,36 +151,127 @@ const addService = async (req, res) => {
 };
 
 const countServiceByStatus = async (req, res) => {
-  const query = {};
-  try {
-    // Get Subscription by ID
-    const status = req.query.status || '';
-    
-    if (status) {
-      
-      query.status = status;
-      const totalServices = await Service.countDocuments(query);
-      //console.log(query);
-      if (!totalServices) {
-        return res.status(404).json({ message: 'No Service found' });
-      }
-      res.json({
-        totalServices
-      });
-    } else {
 
+  try {
       // Get all Subscriptions
-      const totalServices = await Service.countDocuments(query);
+      const allServices = await Service.aggregate([{
+        $group:{
+          _id:null,
+          total:{$sum:1},
+          Active:{
+            $sum:{
+              $cond:[{$eq: ["$status", "Active"]}, 1,0]
+            }
+          },
+          Ideation:{
+            $sum:{
+              $cond:[{$eq: ["$status", "Ideation"]}, 1,0]
+            }
+          },
+          'Under Development':{
+            $sum:{
+              $cond:[{$eq: ["$status", "Under Development"]}, 1,0]
+            }
+          },
+          Archive:{
+            $sum:{
+              $cond:[{$eq: ["$status", "Archive"]}, 1,0]
+            }
+          },
+        }
+      }]);
         
       res.json({
-        totalServices
+        allServices
       });
-    }
+    
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 
 };
+
+const countServiceByCategory = async (req, res) => {
+
+  try {
+      // Get all Subscriptions
+      const allServices = await Service.aggregate([
+        {$unwind:"$service_category"},
+        {
+        $group:{
+          _id:null,
+          total:{$sum:1},
+          "Common Services":{
+            $sum:{
+              $cond:[{$eq: ["$service_category", "Common Services"]}, 1,0]
+            }
+          },
+          "Re-Usable":{
+            $sum:{
+              $cond:[{$eq: ["$service_category", "Re-Usable"]}, 1,0]
+            }
+          },
+          'Domain Specific':{
+            $sum:{
+              $cond:[{$eq: ["$service_category", "Domain Specific"]}, 1,0]
+            }
+          },
+          "Platform Specific":{
+            $sum:{
+              $cond:[{$eq: ["$service_category", "Platform Specific"]}, 1,0]
+            }
+          },
+        }
+      }]);
+        
+      res.json({
+        allServices
+      });
+    
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+
+};
+
+const toggleFeatured= async(req, res)=>{
+  try {
+    const serviceId = req.params.id;
+    // Find the service by ID
+    const service = await Service.findById(serviceId);
+    if (!service) {
+      return res.status(404).json({ message: 'Service not found' });
+    }
+    // Toggle the is_featured field
+    service.is_featured = !service.is_featured;
+    // Save the updated service
+    await service.save();
+    res.json({
+      message: `Service featured status updated to ${service.is_featured}`,
+      service
+    });
+  } catch (err) {
+    console.error('Error toggling featured status:', err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+const getFeaturedServices= async(req, res)=>{
+  try {
+    // Query to find only featured services
+    const query = { is_featured: true };
+    // Get all featured services sorted by createdAt descending
+    const services = await Service.find(query)
+      .sort({ createdAt: -1 }); // Descending sort by createdAt
+    res.json({
+      totalServices: services.length,
+      services
+    });
+  } catch (err) {
+    console.error('Error fetching featured services:', err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
 
 
 export {
@@ -189,7 +280,10 @@ export {
   addService,
   updateService,
   deleteService,
-  countServiceByStatus
+  countServiceByStatus,
+  toggleFeatured,
+  getFeaturedServices,
+  countServiceByCategory
   
   // getservicebyid,
   //   getservicebytype,

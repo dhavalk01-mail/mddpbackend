@@ -2,7 +2,7 @@ import Subscription from "../models/subscriptionModel.js";
 import zod from "zod";
 
 const schema = zod.object({
-  userId: zod.string(),
+  userId: zod.string(), 
   serviceId: zod.string(),
 });
 
@@ -42,26 +42,50 @@ const getSubscription = async (req, res) => {
   try {
     // Get Subscription by ID
     if (req.params.id) {
-      const reqSer = await Subscription.find({ userId: req.params.id });
+      //const reqSer = await Subscription.find( {userId: req.params.id});
+
+      const reqSer = await Subscription.aggregate([{
+        "$match": { userId: req.params.id }          // Or without this $match part, to get all users
+      },
+      {$set: {serviceId: {$toObjectId: "$serviceId"} }},
+      {                                     
+        "$lookup": {
+          from: 'services',
+             localField: 'serviceId',
+             foreignField: '_id',
+             as: 'serviceDetails'
+        },
+        
+        
+      },
+      {
+        $project: {
+          userId: 1,
+          serviceId:1,
+          "serviceDetails.title":1,
+          "serviceDetails.short_description":1,
+          "serviceDetails.detailed_description":1
+        }
+      }
+    ]);
       if (!reqSer) {
-        return res.status(404).json({ message: 'Subscription not found' });
+        return res.status(404).json({ message: 'No Subscription found' });
       }
       res.json(reqSer);
     } else {
 
       // Get all Subscriptions
       const subscription = await Subscription.aggregate([
-        {
-          $lookup:
-          {
-            from: 'service',
-            localField: '_id',
-            foreignField: 'serviceId',
-            as: 'serviceDetails'
-          }
-        }
-      ])
-
+        { $lookup:
+           {
+             from: 'service',
+             localField: '_id',
+             foreignField: 'serviceId',
+             as: 'serviceDetails'
+           }
+         }
+        ])
+        
       res.json({
         subscription
       });
@@ -70,7 +94,68 @@ const getSubscription = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+const serviceList = async (req, res) => {
+  const query = {};
+  console.log(req.query.userId);
+  try {
+    // Get Subscription by ID
+    if (req.query.userId) {
+      //const reqSer = await Subscription.find( {userId: req.params.id});
+
+      const reqSer = await Subscription.aggregate([{
+        "$match": { userId: req.params.id }          // Or without this $match part, to get all users
+      },
+      {$set: {serviceId: {$toObjectId: "$serviceId"} }},
+      {                                     
+        "$lookup": {
+          from: 'services',
+             localField: 'serviceId',
+             foreignField: '_id',
+             as: 'serviceDetails'
+        },
+        
+        
+      },
+      {
+        $project: {
+          userId: 1,
+          serviceId:1,
+          "serviceDetails.title":1,
+          "serviceDetails.short_description":1,
+          "serviceDetails.detailed_description":1
+        }
+      }
+    ]);
+      if (!reqSer) {
+        return res.status(404).json({ message: 'No Subscription found' });
+      }
+      res.json(reqSer);
+    } else {
+
+      // Get all Subscriptions
+      const subscription = await Subscription.aggregate([
+        { $lookup:
+           {
+             from: 'service',
+             localField: '_id',
+             foreignField: 'serviceId',
+             as: 'serviceDetails'
+           }
+         }
+        ])
+        
+      res.json({
+        subscription
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+
+};
 export {
-  addSubscription,
-  getSubscription
+    addSubscription,
+    getSubscription,
+    serviceList
 };
