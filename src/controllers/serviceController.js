@@ -1,28 +1,27 @@
-import Service from "../models/serviceModel.js";
+import { Service, statusEnum, serviceCategoryEnum} from "../models/serviceModel.js";
 import zod from "zod";
 
 const schema = zod.object({
-  title: zod.string().trim(), 
+  title: zod.string().trim(),
   short_description: zod.string(),
   detailed_description: zod.string(),
-  service_category: zod.array(zod.string()),
+  service_category: zod.array(zod.enum(["common", "reusable", "domain_specific", "platform_specific"])),
   endpoint: zod.string(),
   git_endpoint: zod.string(),
   helm_endpoint: zod.string(),
-  status: zod.enum(["Active", "Under Development", "Ideation", "Archive"]),
-  dependent_service: zod.array(zod.string()),
+  status: zod.enum(["active", "under_development", "ideation", "archive"]),
   tags: zod.array(zod.string()),
 });
 
 const updateService = async (req, res) => {
 
-  try{
-    const updServ =await Service.findByIdAndUpdate(req.params.id,req.body)
-    if(!updServ){
+  try {
+    const updServ = await Service.findByIdAndUpdate(req.params.id, req.body)
+    if (!updServ) {
       return res.status(404).json({ message: 'Service not found' });
     }
     res.json(updServ);
-  }catch(error){
+  } catch (error) {
     res.status(500).json({ message: error.message });
   }
 
@@ -30,13 +29,13 @@ const updateService = async (req, res) => {
 
 const deleteService = async (req, res) => {
 
-  try{
-    const delServ =await Service.findByIdAndDelete(req.params.id)
-    if(!delServ){
+  try {
+    const delServ = await Service.findByIdAndDelete(req.params.id)
+    if (!delServ) {
       return res.status(404).json({ message: 'Service not found' });
     }
     res.json(delServ);
-  }catch(error){
+  } catch (error) {
     res.status(500).json({ message: error.message });
   }
 
@@ -103,15 +102,22 @@ const getServices = async (req, res) => {
 
       // Get services with pagination and filter
       const services = await Service
-                                    .find(query)
-                                    .limit(limit)
-                                    .skip(skip)
-                                    .sort({ createdAt: -1});
+        .find(query)
+        .limit(limit)
+        .skip(skip)
+        .sort({ createdAt: -1 });
+
+        const serviceResponce = services.map(service => ({
+          ...service.toObject(),
+          service_category: service.service_category.map(sc => serviceCategoryEnum[sc]),
+          status: statusEnum[service.status],
+        }));
+
       res.json({
         totalServices,
         currentPage: limitQuery === 'all' ? 1 : page,
         totalPages: limitQuery === 'all' ? 1 : Math.ceil(totalServices / limit),
-        services
+        serviceResponce
       });
     }
   } catch (error) {
@@ -131,60 +137,76 @@ const addService = async (req, res) => {
     });
   }
 
-  const newService = await Service.create({
-    title: req.body.title,
-    short_description: req.body.short_description,
-    detailed_description: req.body.detailed_description,
-    service_category: req.body.service_category,
-    git_endpoint: req.body.git_endpoint,
-    endpoint: req.body.endpoint,
-    helm_endpoint: req.body.helm_endpoint,
-    dependent_service: req.body.dependent_service,
-    tags: req.body.tags,
-    status: req.body.status,
-    lead_instructor: req.body.lead_instructor,
-    developers: req.body.developers
-  });
 
-  const serviceID = newService._id;
-  return res.json({ msg: `service created with id = ${serviceID} ` });
+  try {
+    // create new service
+    const newService = await Service.create({
+      title: req.body.title,
+      short_description: req.body.short_description,
+      detailed_description: req.body.detailed_description,
+      service_category: req.body.service_category,
+      git_endpoint: req.body.git_endpoint,
+      endpoint: req.body.endpoint,
+      helm_endpoint: req.body.helm_endpoint,
+      dependent_service: req.body.dependent_service || [],
+      tags: req.body.tags,
+      status: req.body.status,
+      lead_instructor: req.body.lead_instructor,
+      developers: req.body.developers,
+      is_featured: req.body.is_featured
+    });
+
+    const serviceResponce = {
+      ...newService.toObject(),
+      service_category: newService.service_category.map(sc => serviceCategoryEnum[sc]),
+      status: statusEnum[newService.status],
+    };
+    res.status(201).json({
+      msg: "Service added successfully",
+      service: serviceResponce,
+    });
+
+  } catch (error) {
+    console.error('Error adding service:', error);
+    res.status(500).json({ message: error.message });
+  }
 };
 
 const countServiceByStatus = async (req, res) => {
 
   try {
-      // Get all Subscriptions
-      const allServices = await Service.aggregate([{
-        $group:{
-          _id:null,
-          total:{$sum:1},
-          Active:{
-            $sum:{
-              $cond:[{$eq: ["$status", "Active"]}, 1,0]
-            }
-          },
-          Ideation:{
-            $sum:{
-              $cond:[{$eq: ["$status", "Ideation"]}, 1,0]
-            }
-          },
-          'Under Development':{
-            $sum:{
-              $cond:[{$eq: ["$status", "Under Development"]}, 1,0]
-            }
-          },
-          Archive:{
-            $sum:{
-              $cond:[{$eq: ["$status", "Archive"]}, 1,0]
-            }
-          },
-        }
-      }]);
-        
-      res.json({
-        allServices
-      });
-    
+    // Get all Subscriptions
+    const allServices = await Service.aggregate([{
+      $group: {
+        _id: null,
+        total: { $sum: 1 },
+        Active: {
+          $sum: {
+            $cond: [{ $eq: ["$status", "Active"] }, 1, 0]
+          }
+        },
+        Ideation: {
+          $sum: {
+            $cond: [{ $eq: ["$status", "Ideation"] }, 1, 0]
+          }
+        },
+        'Under Development': {
+          $sum: {
+            $cond: [{ $eq: ["$status", "Under Development"] }, 1, 0]
+          }
+        },
+        Archive: {
+          $sum: {
+            $cond: [{ $eq: ["$status", "Archive"] }, 1, 0]
+          }
+        },
+      }
+    }]);
+
+    res.json({
+      allServices
+    });
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -194,47 +216,47 @@ const countServiceByStatus = async (req, res) => {
 const countServiceByCategory = async (req, res) => {
 
   try {
-      // Get all Subscriptions
-      const allServices = await Service.aggregate([
-        {$unwind:"$service_category"},
-        {
-        $group:{
-          _id:null,
-          total:{$sum:1},
-          "Common Services":{
-            $sum:{
-              $cond:[{$eq: ["$service_category", "Common Services"]}, 1,0]
+    // Get all Subscriptions
+    const allServices = await Service.aggregate([
+      { $unwind: "$service_category" },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          "Common Services": {
+            $sum: {
+              $cond: [{ $eq: ["$service_category", "Common Services"] }, 1, 0]
             }
           },
-          "Re-Usable":{
-            $sum:{
-              $cond:[{$eq: ["$service_category", "Re-Usable"]}, 1,0]
+          "Re-Usable": {
+            $sum: {
+              $cond: [{ $eq: ["$service_category", "Re-Usable"] }, 1, 0]
             }
           },
-          'Domain Specific':{
-            $sum:{
-              $cond:[{$eq: ["$service_category", "Domain Specific"]}, 1,0]
+          'Domain Specific': {
+            $sum: {
+              $cond: [{ $eq: ["$service_category", "Domain Specific"] }, 1, 0]
             }
           },
-          "Platform Specific":{
-            $sum:{
-              $cond:[{$eq: ["$service_category", "Platform Specific"]}, 1,0]
+          "Platform Specific": {
+            $sum: {
+              $cond: [{ $eq: ["$service_category", "Platform Specific"] }, 1, 0]
             }
           },
         }
       }]);
-        
-      res.json({
-        allServices
-      });
-    
+
+    res.json({
+      allServices
+    });
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 
 };
 
-const toggleFeatured= async(req, res)=>{
+const toggleFeatured = async (req, res) => {
   try {
     const serviceId = req.params.id;
     // Find the service by ID
@@ -256,7 +278,7 @@ const toggleFeatured= async(req, res)=>{
   }
 }
 
-const getFeaturedServices= async(req, res)=>{
+const getFeaturedServices = async (req, res) => {
   try {
     // Query to find only featured services
     const query = { is_featured: true };
@@ -284,19 +306,4 @@ export {
   toggleFeatured,
   getFeaturedServices,
   countServiceByCategory
-  
-  // getservicebyid,
-  //   getservicebytype,
-  // deleteservice,
-  // updateservice,
-  // getservice,
-  
-
-  //   getservicebypage,
-  //   countservicesbystatus,
-  //   getservicebyddescription,
-  //   getservicebysdescription,
-  // countservicesbystatus,
-  // exampletest,
-
 };
