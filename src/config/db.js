@@ -17,8 +17,8 @@ const connectDB = async () => {
             // var mongourl = `mongodb://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?authSource=admin`
             var mongourl = MONGODB_PROD_URL;
         } else {
-            var mongourl = "mongodb+srv://dhavalkoradiya:1zsuaG058yFKCxJ6@cluster0.ambhqqq.mongodb.net/services";
-            // var mongourl = MONGODB_DEV_URL;
+            // var mongourl = "mongodb+srv://dhavalkoradiya:1zsuaG058yFKCxJ6@cluster0.ambhqqq.mongodb.net/services";
+            var mongourl = MONGODB_DEV_URL;
         }
         // console.log(mongourl);
         await mongoose.connect(mongourl)
