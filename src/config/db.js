@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 const {
     PRODUCTION,
     MONGODB_PROD_URL,
+    MONGODB_DEV_URL,
     DB_USER,
     DB_PASSWORD,
     DB_HOST,
