@@ -117,7 +117,7 @@ const getServices = async (req, res) => {
         totalServices,
         currentPage: limitQuery === 'all' ? 1 : page,
         totalPages: limitQuery === 'all' ? 1 : Math.ceil(totalServices / limit),
-        serviceResponce
+        services: serviceResponce
       });
     }
   } catch (error) {
