@@ -94,13 +94,12 @@ const getSubscription = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 const serviceList = async (req, res) => {
   const query = {};
-  console.log(req.query.userId);
+  console.log(req.params.id);
   try {
     // Get Subscription by ID
-    if (req.query.userId) {
+    if (req.params.id) {
       //const reqSer = await Subscription.find( {userId: req.params.id});
 
       const reqSer = await Subscription.aggregate([{
@@ -154,6 +153,7 @@ const serviceList = async (req, res) => {
   }
 
 };
+
 export {
     addSubscription,
     getSubscription,

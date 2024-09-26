@@ -3,10 +3,16 @@ import mongoose from "mongoose";
 const bookmarkSchema = new mongoose.Schema(
   {
     userId: String,
-    bookmarkId: String,
+    serviceId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Service"
+    }, 
   },
   { timestamps: true },
   { versionKey: false });
 
-const subscription = mongoose.model("bookmark", bookmarkSchema);
-export default subscription;
+const Bookmark = mongoose.model("Bookmark", bookmarkSchema);
+
+export {
+  Bookmark,
+}

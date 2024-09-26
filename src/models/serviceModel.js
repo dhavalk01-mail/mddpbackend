@@ -4,7 +4,8 @@ const statusEnum = {
   "active": "Active",
   "under_development": "Under Development",
   "ideation": "Ideation",
-  "archive": "Archive"
+  "archive": "Archive",
+  "maintenance": "Maintenance",
 }
 
 const serviceCategoryEnum = {
@@ -80,5 +81,3 @@ export {
   statusEnum,
   serviceCategoryEnum
 }
-
-// export default Service;

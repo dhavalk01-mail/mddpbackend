@@ -1,63 +1,75 @@
-import Bookmark from "../models/bookmarkModel.js";
-import zod from "zod";
+import { Bookmark } from '../models/bookmarkModel.js';
+import { Service, serviceCategoryEnum, statusEnum } from '../models/serviceModel.js';
+import { getUserIdFromToken } from './helperController.js';
 
-const schema = zod.object({
-  userId: zod.string(), 
-  bookmarkId: zod.string(),
-});
-
-const addBookmark = async (req, res) => {
-  console.log(req.body)
-  const newBook = schema.safeParse(req.body);
-
-  if (!newBook.success) {
-    return res.status(404).json({
-      err: "incorrect inputs",
-      msg: newBook.error.issues
-    });
-  }
-
-  const newnewBookmark = await Bookmark.create({
-    userId: req.body.userId,
-    bookmarkId: req.body.bookmarkId,
-  });
-
-  const bookmarkId = newnewBookmark._id;
-  return res.json({ msg: `Bookmark created with id = ${bookmarkId} ` });
-};
-
-const getBookmark = async (req, res) => {
+// Toggle a bookmark
+const toggleBookmark = async (req, res) => {
   try {
-    // Get Subscription by ID
-    if (req.params.id) {
-      const reqBookmark = await Bookmark.find( {bookmarkId: req.params.id});
-      if (!reqBookmark) {
-        return res.status(404).json({ message: 'Bookmark not found' });
-      }
-      res.json(reqBookmark);
-    } else {
+    const token = req.headers.authorization.split(' ')[1]; // Token comes as "Bearer token"
+    const tokenResponse = await getUserIdFromToken(token);
+    if (tokenResponse.userId == null) {
+      return res.status(401).json({ error: tokenResponse.error });
+    }
+    const userId = tokenResponse.userId;
 
-      // Get all Subscriptions
-      const bookmark = await Bookmark.aggregate([
-        { $lookup:
-           {
-             from: 'bookmark',
-             localField: '_id',
-             foreignField: 'bookmarkId',
-             as: 'serviceDetails'
-           }
-         }
-        ])
-        
-      res.json({
-        bookmark
-      });
+    const serviceId = req.params.serviceId;
+    // console.log(serviceId)
+    const service = await Service.findById(serviceId);
+    if (!service) {
+      return res.status(404).json({ message: 'Service not found' });
+    }
+
+    const existingBookmark = await Bookmark.findOne({ userId, serviceId });
+
+    if (existingBookmark) {
+      // Remove the bookmark if it exists
+      const response = await Bookmark.deleteOne({ userId, serviceId });
+      return res.status(200).json({ message: 'Service removed from bookmarks', service: response });
+    } else {
+      // Add a new bookmark
+      const bookmark = new Bookmark({ userId, serviceId });
+      const response = await bookmark.save();
+      return res.status(200).json({ message: 'Service bookmarked successfully', service: response });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error toggling bookmark:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+// Get all bookmarks for the user
+const getBookmark = async (req, res) => {
+
+  const token = req.headers.authorization.split(' ')[1]; // Token comes as "Bearer token"
+  if (!token) return res.status(404).json({ message: "Token not found" });
+
+  const tokenResponse = await getUserIdFromToken(token);
+  if (tokenResponse.userId == null) {
+    return res.status(401).json({ error: tokenResponse.error });
+  }
+  const userId = tokenResponse.userId;
+
+  try {
+    const services = await Bookmark.find({ userId }).populate('serviceId');
+    
+    // Convert into Human Readble Format
+    const serviceResponce = services.map(service => ({
+      ...service.serviceId.toObject(),
+      service_category: service.serviceId.service_category.map(sc => serviceCategoryEnum[sc]),
+      status: statusEnum[service.serviceId.status],
+    }));
+
+    res.status(200).json({
+      services: serviceResponce
+    });
+
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+};
+
+
 export {
-    addBookmark,
-    getBookmark
+  toggleBookmark,
+  getBookmark
 };

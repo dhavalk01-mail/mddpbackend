@@ -1,13 +1,15 @@
 import express from "express"
 import {
   getServices,
+  getServicesDetails,
   addService,
   updateService,
   deleteService,
   countServiceByStatus,
   toggleFeatured,
   getFeaturedServices,
-  countServiceByCategory
+  countServiceByCategory,
+  serviceCounts
 } from "../controllers/serviceController.js"
 
 import {
@@ -16,13 +18,13 @@ import {
   serviceList
 } from "../controllers/subscriptionController.js"
 
-import { addBookmark, getBookmark } from "../controllers/bookmarkController.js"
+import { toggleBookmark, getBookmark } from "../controllers/bookmarkController.js"
 
 
 const router = express.Router({ mergeParams: true })
 
 // services
-router.get('/getServices/:id', getServices)
+router.get('/getServices/:id', getServicesDetails)
 router.get('/getServices', getServices)
 router.post("/addService", addService)
 router.put('/updateService/:id', updateService)
@@ -33,20 +35,19 @@ router.patch('/toggleFeatured/:id', toggleFeatured)
 router.get('/getFeaturedServices', getFeaturedServices)
 
 //Subscription
-router.post("/addSubscription", addSubscription),
-router.get('/getSubscription', getSubscription),
+router.post("/addSubscription", addSubscription)
+router.get('/getSubscription', getSubscription)
 router.get('/getSubscription/:id', getSubscription)
 
 //Bookmark
-router.post("/addBookmark", addBookmark),
-router.get('/getBookmark', getBookmark),
-router.get('/getBookmark/:id', getBookmark)
-
+router.post("/toggleBookmark/:serviceId", toggleBookmark)
+router.get('/getBookmark', getBookmark)
 
 //report
 router.get('/countServiceByStatus', countServiceByStatus)
 router.get('/countServiceByCategory', countServiceByCategory)
 
+router.get('/serviceCounts', serviceCounts)
 
 router.get('/serviceList', serviceList),
 router.get('/serviceList/:id', serviceList)

@@ -1,4 +1,5 @@
 import cors from "cors";
+import 'dotenv/config'
 import express from "express";
 import connectDB from "./src/config/db.js";
 import router from "./src/routes/routes.js";
@@ -59,8 +60,14 @@ const convertData = (tags) => {
 }
 */
 
-
-const PORT = 4000;
-app.listen(PORT, () => {
-  console.log(`listening on port ${PORT}`);
-});
+//connection
+const PORT = process.env.NODE_LOCAL_PORT || 4000;
+/** start server only when we have valid connection */
+try {
+  app.listen(PORT, () => {
+      console.log(`Server running on port: ${PORT} AND Your Database host is: ${process.env.MONGODB_DEV_URL}`);
+  })
+  // swaggerDocs(app, PORT);
+} catch (error) {
+  console.error('Cannot connect to the server ->' + error.message);
+}

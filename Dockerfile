@@ -8,5 +8,13 @@ COPY . .
 EXPOSE 4000
 CMD [ "node", "index.js" ]
 
+
+# FROM node:latest
+# WORKDIR /app
+# COPY package.json /app
+# RUN npm install
+# COPY . /app
+# CMD ["node", "index.js"]
+
 # Build the Docker Image
 # docker build -t "mddp-api-server" .

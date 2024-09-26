@@ -1,16 +1,20 @@
-import { Service, statusEnum, serviceCategoryEnum} from "../models/serviceModel.js";
+import { Service, statusEnum, serviceCategoryEnum } from "../models/serviceModel.js";
+import Subscription from "../models/subscriptionModel.js"
 import zod from "zod";
+
+import { getUserIdFromToken } from "./helperController.js";
+import { count } from "console";
 
 const schema = zod.object({
   title: zod.string().trim(),
   short_description: zod.string(),
   detailed_description: zod.string(),
-  service_category: zod.array(zod.enum(["common", "reusable", "domain_specific", "platform_specific"])),
+  service_category: zod.array(zod.enum(Object.keys(serviceCategoryEnum))),
   endpoint: zod.string(),
   git_endpoint: zod.string(),
   helm_endpoint: zod.string(),
-  status: zod.enum(["active", "under_development", "ideation", "archive"]),
-  tags: zod.array(zod.string()),
+  status: zod.enum(Object.keys(statusEnum)),
+  tags: zod.array(zod.string())
 });
 
 const updateService = async (req, res) => {
@@ -48,81 +52,112 @@ const deleteService = async (req, res) => {
 // generate code for /getServices with pagination, search and filter
 const getServices = async (req, res) => {
   try {
-    if (req.params.id) {
-      const reqSer = await Service.findById(req.params.id).populate('dependent_service');
-      if (!reqSer) {
-        return res.status(404).json({ message: 'Service not found' });
-      }
-      res.json(reqSer);
-    } else {
 
-      // Pagination: page number and limit per page (default 5)
-      const page = parseInt(req.query.page) || 1;
-      const limitQuery = req.query.limit;
-      const limit = limitQuery === 'all' ? 0 : parseInt(req.query.limit) || 5;
-      const skip = (page - 1) * limit;
+    // Pagination: page number and limit per page (default 5)
+    const page = parseInt(req.query.page) || 1;
+    const limitQuery = req.query.limit;
+    const limit = limitQuery === 'all' ? 0 : parseInt(req.query.limit) || 5;
+    const skip = (page - 1) * limit;
 
-      // Search query
-      const searchQuery = req.query.search || '';
+    // Search query
+    const searchQuery = req.query.search || '';
 
-      // Fliter options
-      const serviceCategory = req.query.service_category ? req.query.service_category.split(',') : [];
-      const status = req.query.status ? req.query.status.split(',') : [];
-      const tags = req.query.tags ? req.query.tags.split(',') : [];
+    // Fliter options
+    const serviceCategory = req.query.service_category ? req.query.service_category.split(',') : [];
+    const status = req.query.status ? req.query.status.split(',') : [];
+    const tags = req.query.tags ? req.query.tags.split(',') : [];
 
-      // Build query object
-      const query = {};
+    // Build query object
+    const query = {};
 
-      //Search query in title, short_description, description, tags
-      if (searchQuery) {
-        query.$or = [
-          { title: { $regex: searchQuery, $options: 'i' } },
-          { short_description: { $regex: searchQuery, $options: 'i' } },
-          { detailed_description: { $regex: searchQuery, $options: 'i' } },
-        ];
-      }
-
-      // Filter by service_category
-      if (serviceCategory.length > 0) {
-        query.service_category = { $in: serviceCategory };
-      }
-
-      // Filter by status
-      if (status.length > 0) {
-        query.status = { $in: status };
-      }
-
-      // Filter by tags (if tags are provided)
-      if (tags.length > 0) {
-        query.tags = { $in: tags };
-      }
-
-      // Get total count of services
-      const totalServices = await Service.countDocuments(query);
-
-      // Get services with pagination and filter
-      const services = await Service
-        .find(query)
-        .limit(limit)
-        .skip(skip)
-        .sort({ createdAt: -1 });
-
-        const serviceResponce = services.map(service => ({
-          ...service.toObject(),
-          service_category: service.service_category.map(sc => serviceCategoryEnum[sc]),
-          status: statusEnum[service.status],
-        }));
-
-      res.json({
-        totalServices,
-        currentPage: limitQuery === 'all' ? 1 : page,
-        totalPages: limitQuery === 'all' ? 1 : Math.ceil(totalServices / limit),
-        services: serviceResponce
-      });
+    //Search query in title, short_description, description, tags
+    if (searchQuery) {
+      query.$or = [
+        { title: { $regex: searchQuery, $options: 'i' } },
+        { short_description: { $regex: searchQuery, $options: 'i' } },
+        { detailed_description: { $regex: searchQuery, $options: 'i' } },
+      ];
     }
+
+    // Filter by service_category
+    if (serviceCategory.length > 0) {
+      query.service_category = { $in: serviceCategory };
+    }
+
+    // Filter by status
+    if (status.length > 0) {
+      query.status = { $in: status };
+    }
+
+    // Filter by tags (if tags are provided)
+    if (tags.length > 0) {
+      query.tags = { $in: tags };
+    }
+
+    // Get total count of services
+    const totalServices = await Service.countDocuments(query);
+
+    // Get services with pagination and filter
+    const services = await Service
+      .find(query)
+      .limit(limit)
+      .skip(skip)
+      .sort({ createdAt: -1 });
+
+    // Convert into Human Readble Format
+    const serviceResponce = services.map(service => ({
+      ...service.toObject(),
+      service_category: service.service_category.map(sc => serviceCategoryEnum[sc]),
+      status: statusEnum[service.status],
+    }));
+
+    res.json({
+      totalServices,
+      currentPage: limitQuery === 'all' ? 1 : page,
+      totalPages: limitQuery === 'all' ? 1 : Math.ceil(totalServices / limit),
+      services: serviceResponce
+    });
   } catch (error) {
-    console.log('============')
     res.status(500).json({ message: error.message });
+  }
+};
+
+const getServicesDetails = async (req, res) => {
+  if (req.params.id) {
+    let subscribed = { subscribed: false };
+    let is_subscribed = false;
+    //Getting user Details
+
+    if (req.get("Authorization")) {
+      const token = req.headers.authorization.split(' ')[1]; // Token comes as "Bearer token"
+      const tokenResponse = await getUserIdFromToken(token);
+      if (tokenResponse.userId == null) {
+        return res.status(401).json({ error: tokenResponse.error });
+      }
+      const userId = tokenResponse.userId;
+      //Checking service subscribed or not
+      is_subscribed = await Subscription.find({ $and: [{ userId: userId }, { serviceId: req.params.id }] })
+
+    }
+    const service = await Service.findById(req.params.id);
+
+    if (!service) {
+      return res.status(404).json({ message: 'Service not found' });
+    }
+
+    const serviceResponce = {
+      ...service.toObject(),
+      service_category: service.service_category.map(sc => serviceCategoryEnum[sc]),
+      status: statusEnum[service.status],
+    };
+
+    if (is_subscribed.length > 0) {
+      let subscribed = { subscribed: true };
+    }
+
+    res.status(200).json({ serviceDetails: { ...serviceResponce, ...subscribed } })
+  } else {
+    return res.status(404).json({ message: 'Invalid Service ID' });
   }
 };
 
@@ -156,6 +191,7 @@ const addService = async (req, res) => {
       is_featured: req.body.is_featured
     });
 
+    // Convert into Human Readble Format
     const serviceResponce = {
       ...newService.toObject(),
       service_category: newService.service_category.map(sc => serviceCategoryEnum[sc]),
@@ -296,14 +332,92 @@ const getFeaturedServices = async (req, res) => {
 }
 
 
-export {
+const serviceCounts = async (req, res) => {
+  try {
+    const serviceCountsbyStatus = await Service.aggregate([
+      {
+        $group: {
+          _id: '$status',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
 
+    const defaultStatusCount = Object.keys(statusEnum).reduce((acc, key) => {
+      acc[statusEnum[key]] = 0;
+      return acc;
+    }, {});
+
+    serviceCountsbyStatus.forEach(item => {
+      const humanredableStatus = statusEnum[item._id] || item._id;
+      defaultStatusCount[humanredableStatus] = item.count;
+    });
+
+    const readbleStatus = Object.keys(defaultStatusCount).map(status => ({
+      status,
+      count: defaultStatusCount[status]
+    }));
+
+    // const readbleStatus = serviceCountsbyStatus.map(item => ({
+    //   status: statusEnum[item._id] || item._id,
+    //   status_key: item._id,
+    //   count: item.count
+    // }));
+
+    const serviceCountsbyCategory = await Service.aggregate([
+      { $unwind: '$service_category' },
+      {
+        $group: {
+          _id: '$service_category',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    
+    const defaultCategoryCount = Object.keys(serviceCategoryEnum).reduce((acc, key) => {
+      acc[serviceCategoryEnum[key]] = 0;
+      return acc;
+    }, {});
+
+    serviceCountsbyCategory.forEach(item => {
+      const humanredableCategory = serviceCategoryEnum[item._id] || item._id;
+      defaultCategoryCount[humanredableCategory] = item.count;
+    });
+
+    const readbleCategory = Object.keys(defaultCategoryCount).map(category => ({
+      category,
+      count: defaultCategoryCount[category]
+    }));
+
+    // const readbleCategory = serviceCountsbyCategory.map(item => ({
+    //   category: serviceCategoryEnum[item._id] || item._id,
+    //   category_key: item._id,
+    //   count: item.count
+    // }));
+
+    const totalServices = await Service.countDocuments();
+
+    res.status(200).json({
+      total: totalServices,
+      serviceCountsbyStatus: readbleStatus,
+      serviceCountsbyCategory: readbleCategory
+    })
+
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+}
+
+export {
   getServices,
+  getServicesDetails,
   addService,
   updateService,
   deleteService,
   countServiceByStatus,
   toggleFeatured,
   getFeaturedServices,
-  countServiceByCategory
+  countServiceByCategory,
+  serviceCounts
 };
