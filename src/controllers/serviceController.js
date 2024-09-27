@@ -1,9 +1,8 @@
 import { Service, statusEnum, serviceCategoryEnum } from "../models/serviceModel.js";
 import Subscription from "../models/subscriptionModel.js"
-import zod from "zod";
-
+import { Bookmark } from "../models/bookmarkModel.js";
 import { getUserIdFromToken } from "./helperController.js";
-import { count } from "console";
+import zod from "zod";
 
 const schema = zod.object({
   title: zod.string().trim(),
@@ -126,6 +125,10 @@ const getServicesDetails = async (req, res) => {
   if (req.params.id) {
     let subscribed = { subscribed: false };
     let is_subscribed = false;
+
+    let bookmarked = { bookmarked: false };
+    let is_bookmarked = false;
+
     //Getting user Details
 
     if (req.get("Authorization")) {
@@ -136,9 +139,10 @@ const getServicesDetails = async (req, res) => {
       }
       const userId = tokenResponse.userId;
       //Checking service subscribed or not
-      is_subscribed = await Subscription.find({ $and: [{ userId: userId }, { serviceId: req.params.id }] })
-
+      is_subscribed = await Subscription.find({ $and: [{ userId: userId }, { serviceId: req.params.id }] });
+      is_bookmarked = await Bookmark.find({ $and: [{ userId: userId }, { serviceId: req.params.id }] });
     }
+
     const service = await Service.findById(req.params.id);
 
     if (!service) {
@@ -152,10 +156,15 @@ const getServicesDetails = async (req, res) => {
     };
 
     if (is_subscribed.length > 0) {
-      let subscribed = { subscribed: true };
+      subscribed = { subscribed: true };
     }
 
-    res.status(200).json({ serviceDetails: { ...serviceResponce, ...subscribed } })
+    if (is_bookmarked.length > 0) {
+      bookmarked = { bookmarked: true };
+    }
+
+    res.status(200).json({ serviceDetails: { ...serviceResponce, ...subscribed, ...bookmarked } });
+
   } else {
     return res.status(404).json({ message: 'Invalid Service ID' });
   }
@@ -344,18 +353,25 @@ const serviceCounts = async (req, res) => {
     ]);
 
     const defaultStatusCount = Object.keys(statusEnum).reduce((acc, key) => {
-      acc[statusEnum[key]] = 0;
+      acc[key] = {
+        status: statusEnum[key],
+        count: 0
+      };
       return acc;
     }, {});
 
     serviceCountsbyStatus.forEach(item => {
       const humanredableStatus = statusEnum[item._id] || item._id;
-      defaultStatusCount[humanredableStatus] = item.count;
+      defaultStatusCount[humanredableStatus] = {
+        status: humanredableStatus,
+        count: item.count
+      };
     });
 
-    const readbleStatus = Object.keys(defaultStatusCount).map(status => ({
-      status,
-      count: defaultStatusCount[status]
+    const readbleStatus = Object.keys(defaultStatusCount).map(key => ({
+      key,
+      status: defaultStatusCount[key].status,
+      count: defaultStatusCount[key].count
     }));
 
     // const readbleStatus = serviceCountsbyStatus.map(item => ({
@@ -374,21 +390,31 @@ const serviceCounts = async (req, res) => {
       }
     ]);
 
-    
-    const defaultCategoryCount = Object.keys(serviceCategoryEnum).reduce((acc, key) => {
-      acc[serviceCategoryEnum[key]] = 0;
-      return acc;
+    const defaultCategoryCount = Object.keys(serviceCategoryEnum).reduce((cat_acc, key) => {
+      cat_acc[key] = {
+        status: serviceCategoryEnum[key],
+        count: 0
+      };
+
+      return cat_acc;
     }, {});
 
     serviceCountsbyCategory.forEach(item => {
       const humanredableCategory = serviceCategoryEnum[item._id] || item._id;
-      defaultCategoryCount[humanredableCategory] = item.count;
+      defaultCategoryCount[humanredableCategory] = {
+        status: humanredableCategory,
+        count: item.count
+      };
     });
 
-    const readbleCategory = Object.keys(defaultCategoryCount).map(category => ({
-      category,
-      count: defaultCategoryCount[category]
+    const readbleCategory = Object.keys(defaultCategoryCount).map(key => ({
+      key,
+      status: defaultCategoryCount[key].status,
+      count: defaultCategoryCount[key].count
     }));
+
+
+
 
     // const readbleCategory = serviceCountsbyCategory.map(item => ({
     //   category: serviceCategoryEnum[item._id] || item._id,
