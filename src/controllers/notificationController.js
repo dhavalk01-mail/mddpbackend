@@ -7,7 +7,7 @@ const getPendingSubscription = async (req, res) => {
   try {
     const subscriptions = await Subscription.find({ is_approved: "pending" }).populate('serviceId');
     res.status(200).json({
-      subscriptions
+      pending_notifications: subscriptions
     });
 
   } catch (error) {
@@ -17,3 +17,4 @@ const getPendingSubscription = async (req, res) => {
 
 
 export default getPendingSubscription
+
