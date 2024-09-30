@@ -139,8 +139,8 @@ const getServicesDetails = async (req, res) => {
       }
       const userId = tokenResponse.userId;
       //Checking service subscribed or not
-      is_subscribed = await Subscription.find({ $and: [{ userId: userId }, { serviceId: req.params.id }] });
-      is_bookmarked = await Bookmark.find({ $and: [{ userId: userId }, { serviceId: req.params.id }] });
+      is_subscribed = await Subscription.findOne({ $and: [{ userId: userId }, { serviceId: req.params.id }] });
+      is_bookmarked = await Bookmark.findOne({ $and: [{ userId: userId }, { serviceId: req.params.id }] });
     }
 
     const service = await Service.findById(req.params.id);
@@ -154,12 +154,13 @@ const getServicesDetails = async (req, res) => {
       service_category: service.service_category.map(sc => serviceCategoryEnum[sc]),
       status: statusEnum[service.status],
     };
-
-    if (is_subscribed.length > 0) {
-      subscribed = { subscribed: true };
+    
+    if (is_subscribed) {
+      // console.log(is_subscribed);
+      subscribed = { subscribed: is_subscribed.is_approved };
     }
 
-    if (is_bookmarked.length > 0) {
+    if (is_bookmarked) {
       bookmarked = { bookmarked: true };
     }
 
@@ -217,89 +218,89 @@ const addService = async (req, res) => {
   }
 };
 
-const countServiceByStatus = async (req, res) => {
+// const countServiceByStatus = async (req, res) => {
 
-  try {
-    // Get all Subscriptions
-    const allServices = await Service.aggregate([{
-      $group: {
-        _id: null,
-        total: { $sum: 1 },
-        Active: {
-          $sum: {
-            $cond: [{ $eq: ["$status", "Active"] }, 1, 0]
-          }
-        },
-        Ideation: {
-          $sum: {
-            $cond: [{ $eq: ["$status", "Ideation"] }, 1, 0]
-          }
-        },
-        'Under Development': {
-          $sum: {
-            $cond: [{ $eq: ["$status", "Under Development"] }, 1, 0]
-          }
-        },
-        Archive: {
-          $sum: {
-            $cond: [{ $eq: ["$status", "Archive"] }, 1, 0]
-          }
-        },
-      }
-    }]);
+//   try {
+//     // Get all Subscriptions
+//     const allServices = await Service.aggregate([{
+//       $group: {
+//         _id: null,
+//         total: { $sum: 1 },
+//         Active: {
+//           $sum: {
+//             $cond: [{ $eq: ["$status", "Active"] }, 1, 0]
+//           }
+//         },
+//         Ideation: {
+//           $sum: {
+//             $cond: [{ $eq: ["$status", "Ideation"] }, 1, 0]
+//           }
+//         },
+//         'Under Development': {
+//           $sum: {
+//             $cond: [{ $eq: ["$status", "Under Development"] }, 1, 0]
+//           }
+//         },
+//         Archive: {
+//           $sum: {
+//             $cond: [{ $eq: ["$status", "Archive"] }, 1, 0]
+//           }
+//         },
+//       }
+//     }]);
 
-    res.json({
-      allServices
-    });
+//     res.json({
+//       allServices
+//     });
 
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
 
-};
+// };
 
-const countServiceByCategory = async (req, res) => {
+// const countServiceByCategory = async (req, res) => {
 
-  try {
-    // Get all Subscriptions
-    const allServices = await Service.aggregate([
-      { $unwind: "$service_category" },
-      {
-        $group: {
-          _id: null,
-          total: { $sum: 1 },
-          "Common Services": {
-            $sum: {
-              $cond: [{ $eq: ["$service_category", "Common Services"] }, 1, 0]
-            }
-          },
-          "Re-Usable": {
-            $sum: {
-              $cond: [{ $eq: ["$service_category", "Re-Usable"] }, 1, 0]
-            }
-          },
-          'Domain Specific': {
-            $sum: {
-              $cond: [{ $eq: ["$service_category", "Domain Specific"] }, 1, 0]
-            }
-          },
-          "Platform Specific": {
-            $sum: {
-              $cond: [{ $eq: ["$service_category", "Platform Specific"] }, 1, 0]
-            }
-          },
-        }
-      }]);
+//   try {
+//     // Get all Subscriptions
+//     const allServices = await Service.aggregate([
+//       { $unwind: "$service_category" },
+//       {
+//         $group: {
+//           _id: null,
+//           total: { $sum: 1 },
+//           "Common Services": {
+//             $sum: {
+//               $cond: [{ $eq: ["$service_category", "Common Services"] }, 1, 0]
+//             }
+//           },
+//           "Re-Usable": {
+//             $sum: {
+//               $cond: [{ $eq: ["$service_category", "Re-Usable"] }, 1, 0]
+//             }
+//           },
+//           'Domain Specific': {
+//             $sum: {
+//               $cond: [{ $eq: ["$service_category", "Domain Specific"] }, 1, 0]
+//             }
+//           },
+//           "Platform Specific": {
+//             $sum: {
+//               $cond: [{ $eq: ["$service_category", "Platform Specific"] }, 1, 0]
+//             }
+//           },
+//         }
+//       }]);
 
-    res.json({
-      allServices
-    });
+//     res.json({
+//       allServices
+//     });
 
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
 
-};
+// };
 
 const toggleFeatured = async (req, res) => {
   try {
@@ -441,9 +442,9 @@ export {
   addService,
   updateService,
   deleteService,
-  countServiceByStatus,
+  //countServiceByStatus,
   toggleFeatured,
   getFeaturedServices,
-  countServiceByCategory,
+  //countServiceByCategory,
   serviceCounts
 };

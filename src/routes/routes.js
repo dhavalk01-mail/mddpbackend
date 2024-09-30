@@ -5,21 +5,22 @@ import {
   addService,
   updateService,
   deleteService,
-  countServiceByStatus,
+  //countServiceByStatus,
   toggleFeatured,
   getFeaturedServices,
-  countServiceByCategory,
+  //countServiceByCategory,
   serviceCounts
 } from "../controllers/serviceController.js"
 
 import {
   addSubscription,
   getSubscription,
-  serviceList
 } from "../controllers/subscriptionController.js"
 
 import { toggleBookmark, getBookmark } from "../controllers/bookmarkController.js"
 
+import { serviceList} from "../controllers/reportController.js"
+import getPendingSubscription from "../controllers/notificationController.js"
 
 const router = express.Router({ mergeParams: true })
 
@@ -44,13 +45,17 @@ router.post("/toggleBookmark/:serviceId", toggleBookmark)
 router.get('/getBookmark', getBookmark)
 
 //report
-router.get('/countServiceByStatus', countServiceByStatus)
-router.get('/countServiceByCategory', countServiceByCategory)
+//router.get('/countServiceByStatus', countServiceByStatus)
+//router.get('/countServiceByCategory', countServiceByCategory)
 
 router.get('/serviceCounts', serviceCounts)
 
-router.get('/serviceList', serviceList),
+//reports
+router.get('/serviceList', serviceList)
 router.get('/serviceList/:id', serviceList)
 
+
+//notification
+router.get('/getPendingSubscriptions', getPendingSubscription)
 
 export default router
