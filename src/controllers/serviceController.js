@@ -352,6 +352,7 @@ const serviceCounts = async (req, res) => {
         }
       }
     ]);
+    
 
     const defaultStatusCount = Object.keys(statusEnum).reduce((acc, key) => {
       acc[key] = {
@@ -362,7 +363,7 @@ const serviceCounts = async (req, res) => {
     }, {});
 
     serviceCountsbyStatus.forEach(item => {
-      const humanredableStatus = statusEnum[item._id] || item._id;
+      const humanredableStatus = statusEnum[item.id] || item._id;
       defaultStatusCount[humanredableStatus] = {
         status: humanredableStatus,
         count: item.count
@@ -401,7 +402,7 @@ const serviceCounts = async (req, res) => {
     }, {});
 
     serviceCountsbyCategory.forEach(item => {
-      const humanredableCategory = serviceCategoryEnum[item._id] || item._id;
+      const humanredableCategory = serviceCategoryEnum[item.id] || item._id;
       defaultCategoryCount[humanredableCategory] = {
         status: humanredableCategory,
         count: item.count
