@@ -3,6 +3,7 @@ import Subscription from "../models/subscriptionModel.js"
 import { Bookmark } from "../models/bookmarkModel.js";
 import { getUserIdFromToken } from "./helperController.js";
 import zod from "zod";
+import { stat } from "fs";
 
 const schema = zod.object({
   title: zod.string().trim(),
@@ -130,7 +131,6 @@ const getServicesDetails = async (req, res) => {
     let is_bookmarked = false;
 
     //Getting user Details
-
     if (req.get("Authorization")) {
       const token = req.headers.authorization.split(' ')[1]; // Token comes as "Bearer token"
       const tokenResponse = await getUserIdFromToken(token);
@@ -143,7 +143,7 @@ const getServicesDetails = async (req, res) => {
       is_bookmarked = await Bookmark.findOne({ $and: [{ userId: userId }, { serviceId: req.params.id }] });
     }
 
-    const service = await Service.findById(req.params.id);
+    const service = await Service.findById(req.params.id).populate('dependent_service');
 
     if (!service) {
       return res.status(404).json({ message: 'Service not found' });
@@ -153,6 +153,8 @@ const getServicesDetails = async (req, res) => {
       ...service.toObject(),
       service_category: service.service_category.map(sc => serviceCategoryEnum[sc]),
       status: statusEnum[service.status],
+      service_category_key: service.service_category,
+      status_key: service.status
     };
     
     if (is_subscribed) {
