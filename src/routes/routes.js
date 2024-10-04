@@ -19,8 +19,8 @@ import {
 
 import { toggleBookmark, getBookmark } from "../controllers/bookmarkController.js"
 
-import { serviceList} from "../controllers/reportController.js"
-import getPendingSubscription from "../controllers/notificationController.js"
+import { serviceList, getServicesSubscribedByUsers, getUsersSubscribedToServices } from "../controllers/reportController.js"
+import { getPendingSubscription, updateSubscriptionStatus } from "../controllers/notificationController.js"
 
 const router = express.Router({ mergeParams: true })
 
@@ -54,8 +54,13 @@ router.get('/serviceCounts', serviceCounts)
 router.get('/serviceList', serviceList)
 router.get('/serviceList/:id', serviceList)
 
+router.get('/report/servicesandSubscriber', getServicesSubscribedByUsers)
+router.get('/report/usersandSubscribedServices', getUsersSubscribedToServices)
+
+
 
 //notification
 router.get('/getPendingSubscriptions', getPendingSubscription)
+router.put('/updateSubscriptionStatus', updateSubscriptionStatus)
 
 export default router

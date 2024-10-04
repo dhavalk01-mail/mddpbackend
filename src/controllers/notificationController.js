@@ -15,6 +15,32 @@ const getPendingSubscription = async (req, res) => {
   }
 };
 
+const updateSubscriptionStatus = async (req, res) => {
+  try {
+    const existingSubscription = await Subscription.findOne({
+      userId: req.body.userId,
+      serviceId: req.body.serviceId,
+    });
+    if (existingSubscription) {
+      const updateSubscriptions = await Subscription.findOneAndUpdate(
+        { userId: req.body.userId, serviceId: req.body.serviceId },
+        { is_approved: req.body.action },
+        { new: true }
+      );
 
-export default getPendingSubscription
+      res.status(200).json({
+        updateSubscriptions
+      });
+    }
+    else {
+      return res.status(404).json({ message: 'Subscription not found' });
+    }
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+};
 
+export {
+  getPendingSubscription,
+  updateSubscriptionStatus
+}

@@ -3,10 +3,11 @@ import 'dotenv/config'
 import express from "express";
 import connectDB from "./src/config/db.js";
 import router from "./src/routes/routes.js";
-import swaggerJSDoc from "swagger-jsdoc";
-import swaggerUI from "swagger-ui-express";
+// import swaggerJSDoc from "swagger-jsdoc";
+// import swaggerUI from "swagger-ui-express";
 // import servicedata from './servicedata.json' with { type: "json" };
 // import fs from 'fs'
+
 
 const app = express();
 
@@ -21,7 +22,6 @@ app.use("/api", router);
 app.get("/ready", (req, res) => {
   res.send("Hello World!");
 });
-
 
 /*
 app.get('/import', function (req, res) {
@@ -40,23 +40,23 @@ app.get('/import', function (req, res) {
   });
 
   // create file and write with new data
-  // fs.writeFile("./output.json", JSON.stringify(new_data), function (err) {
-  //   if (err) throw err;
-  //   console.log('complete');
-  // });
+  fs.writeFile("./output.json", JSON.stringify(new_data), function (err) {
+    if (err) throw err;
+    console.log('complete');
+  });
 
   res.json({ new_data });
 });
 
 const convertData = (tags) => {
   // category
-  if (tags.includes("commonServices")) return "Common Services";
-  if (tags.includes("reusuableServices")) return "Re-usuable Services";
-  if (tags.includes("domainSpecificServices")) return "Domain-specific Services";
+  if (tags.includes("commonServices")) return "common";
+  if (tags.includes("reusuableServices")) return "reusable";
+  if (tags.includes("domainSpecificServices")) return "domain_specific";
   // status
-  if (tags.includes("readyForApplicationsUse")) return "Active";
-  if (tags.includes("developmentInProgress")) return "Under Development";
-  if (tags.includes("ideation")) return "Ideation";
+  if (tags.includes("readyForApplicationsUse")) return "active";
+  if (tags.includes("developmentInProgress")) return "under_development";
+  if (tags.includes("ideation")) return "ideation";
 }
 */
 
@@ -65,7 +65,13 @@ const PORT = process.env.NODE_LOCAL_PORT || 4000;
 /** start server only when we have valid connection */
 try {
   app.listen(PORT, () => {
-      console.log(`Server running on port: ${PORT} AND Your Database host is: ${process.env.MONGODB_DEV_URL}`);
+    if (process.env.ENVIRONMENT === 'PROD') {
+      var mongourl = process.env.MONGO_URL || process.env.MONGODB_PROD_URL;
+    } else {
+      var mongourl = process.env.MONGODB_DEV_URL;
+    }
+    console.log(`Server running on port: ${PORT} AND Your Database host is: ${mongourl}`);
+ 
   })
   // swaggerDocs(app, PORT);
 } catch (error) {
