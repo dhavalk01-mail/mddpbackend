@@ -3,7 +3,6 @@ import Subscription from "../models/subscriptionModel.js"
 import { Bookmark } from "../models/bookmarkModel.js";
 import { getUserIdFromToken } from "./helperController.js";
 import zod from "zod";
-import { stat } from "fs";
 
 const schema = zod.object({
   title: zod.string().trim(),
@@ -53,6 +52,40 @@ const deleteService = async (req, res) => {
 const getServices = async (req, res) => {
   try {
 
+    if (req.query.userId) {
+      const userId=req.query.userId;
+    
+      const serviceStatus=req.query.status;
+
+      if(serviceStatus!='bookmark'){
+        const totalServices = await Subscription.countDocuments({ userId });
+        console.log(totalServices)
+        const serviceDetails = await Subscription.find({ $and: [{ userId: req.query.userId }, { is_approved: serviceStatus }] }).populate('serviceId');
+    
+        if (!serviceDetails) {
+          return res.status(404).json({ message: 'No Subscription found' });
+        }
+        res.json(
+            {   totalServices:totalServices,
+                serviceDetails
+            });
+      }
+      else{
+        const totalServices = await Bookmark.countDocuments({ userId });
+        console.log(totalServices)
+        const serviceDetails = await Bookmark.find({ userId: req.query.userId }).populate('serviceId');
+    
+        if (!serviceDetails) {
+          return res.status(404).json({ message: 'No Bookmark found' });
+        }
+        res.json(
+            {   totalServices:totalServices,
+                serviceDetails
+            });
+      }
+  
+    } 
+    else{
     // Pagination: page number and limit per page (default 5)
     const page = parseInt(req.query.page) || 1;
     const limitQuery = req.query.limit;
@@ -117,7 +150,7 @@ const getServices = async (req, res) => {
       totalPages: limitQuery === 'all' ? 1 : Math.ceil(totalServices / limit),
       services: serviceResponce
     });
-  } catch (error) {
+  } }catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
@@ -355,7 +388,6 @@ const serviceCounts = async (req, res) => {
       }
     ]);
     
-
     const defaultStatusCount = Object.keys(statusEnum).reduce((acc, key) => {
       acc[key] = {
         status: statusEnum[key],
@@ -439,6 +471,49 @@ const serviceCounts = async (req, res) => {
   }
 }
 
+const getServiceListByStatus = async (req, res) => {
+
+  try {
+    console.log(req.query.userId)
+  // Get Subscription by userID
+  const userId=req.query.userId;
+  const status=req.query.status
+  if (userId) {
+    if(status!='bookmark'){
+      const totalServices = await Subscription.countDocuments({ userId });
+      console.log(totalServices)
+      const serviceDetails = await Subscription.find({ $and: [{ userId: req.query.userId }, { is_approved: status }] }).populate('serviceId');
+  
+      if (!serviceDetails) {
+        return res.status(404).json({ message: 'No Subscription found' });
+      }
+      res.json(
+          {   totalServices:totalServices,
+              serviceDetails
+          });
+    }
+    else{
+      const totalServices = await Bookmark.countDocuments({ userId });
+      console.log(totalServices)
+      const serviceDetails = await Bookmark.find({ userId: req.query.userId }).populate('serviceId');
+  
+      if (!serviceDetails) {
+        return res.status(404).json({ message: 'No Bookmark found' });
+      }
+      res.json(
+          {   totalServices:totalServices,
+              serviceDetails
+          });
+    }
+
+  } 
+  
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+
+};
+
 export {
   getServices,
   getServicesDetails,
@@ -448,6 +523,6 @@ export {
   //countServiceByStatus,
   toggleFeatured,
   getFeaturedServices,
-  //countServiceByCategory,
+  getServiceListByStatus,
   serviceCounts
 };
