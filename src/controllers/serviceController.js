@@ -51,41 +51,7 @@ const deleteService = async (req, res) => {
 // generate code for /getServices with pagination, search and filter
 const getServices = async (req, res) => {
   try {
-
-    if (req.query.userId) {
-      const userId=req.query.userId;
-    
-      const serviceStatus=req.query.status;
-
-      if(serviceStatus!='bookmark'){
-        const totalServices = await Subscription.countDocuments({ userId });
-        console.log(totalServices)
-        const serviceDetails = await Subscription.find({ $and: [{ userId: req.query.userId }, { is_approved: serviceStatus }] }).populate('serviceId');
-    
-        if (!serviceDetails) {
-          return res.status(404).json({ message: 'No Subscription found' });
-        }
-        res.json(
-            {   totalServices:totalServices,
-                serviceDetails
-            });
-      }
-      else{
-        const totalServices = await Bookmark.countDocuments({ userId });
-        console.log(totalServices)
-        const serviceDetails = await Bookmark.find({ userId: req.query.userId }).populate('serviceId');
-    
-        if (!serviceDetails) {
-          return res.status(404).json({ message: 'No Bookmark found' });
-        }
-        res.json(
-            {   totalServices:totalServices,
-                serviceDetails
-            });
-      }
-  
-    } 
-    else{
+    const { userId, isBookmarked, subscriptionStatus } = req.query || false;
     // Pagination: page number and limit per page (default 5)
     const page = parseInt(req.query.page) || 1;
     const limitQuery = req.query.limit;
@@ -127,6 +93,20 @@ const getServices = async (req, res) => {
       query.tags = { $in: tags };
     }
 
+    // Filter by Bookmark (if userId is provided and isBookmarked=true)
+    if (userId && isBookmarked === 'true') {
+      const bookmarkedServices = await Bookmark.find({ userId: userId }).select('serviceId');
+      const bookmarkedServiceIds = bookmarkedServices.map(bookmark => bookmark.serviceId);
+      query._id = { $in: bookmarkedServiceIds };
+    }
+
+    // Filter by Subscription (if userId is provided and subscriptionStatus is provided)
+    if (userId && subscriptionStatus) {
+      const subscribedServices = await Subscription.find({ userId: userId, is_approved: subscriptionStatus }).select('serviceId');
+      const subscribedServiceIds = subscribedServices.map(sub => sub.serviceId);
+      query._id = { $in: subscribedServiceIds };
+    }
+
     // Get total count of services
     const totalServices = await Service.countDocuments(query);
 
@@ -150,7 +130,8 @@ const getServices = async (req, res) => {
       totalPages: limitQuery === 'all' ? 1 : Math.ceil(totalServices / limit),
       services: serviceResponce
     });
-  } }catch (error) {
+
+  } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
@@ -189,7 +170,7 @@ const getServicesDetails = async (req, res) => {
       service_category_key: service.service_category,
       status_key: service.status
     };
-    
+
     if (is_subscribed) {
       // console.log(is_subscribed);
       subscribed = { subscribed: is_subscribed.is_approved };
@@ -387,7 +368,7 @@ const serviceCounts = async (req, res) => {
         }
       }
     ]);
-    
+
     const defaultStatusCount = Object.keys(statusEnum).reduce((acc, key) => {
       acc[key] = {
         status: statusEnum[key],
@@ -475,39 +456,41 @@ const getServiceListByStatus = async (req, res) => {
 
   try {
     console.log(req.query.userId)
-  // Get Subscription by userID
-  const userId=req.query.userId;
-  const status=req.query.status
-  if (userId) {
-    if(status!='bookmark'){
-      const totalServices = await Subscription.countDocuments({ userId });
-      console.log(totalServices)
-      const serviceDetails = await Subscription.find({ $and: [{ userId: req.query.userId }, { is_approved: status }] }).populate('serviceId');
-  
-      if (!serviceDetails) {
-        return res.status(404).json({ message: 'No Subscription found' });
-      }
-      res.json(
-          {   totalServices:totalServices,
-              serviceDetails
+    // Get Subscription by userID
+    const userId = req.query.userId;
+    const status = req.query.status
+    if (userId) {
+      if (status != 'bookmark') {
+        const totalServices = await Subscription.countDocuments({ userId });
+        console.log(totalServices)
+        const serviceDetails = await Subscription.find({ $and: [{ userId: req.query.userId }, { is_approved: status }] }).populate('serviceId');
+
+        if (!serviceDetails) {
+          return res.status(404).json({ message: 'No Subscription found' });
+        }
+        res.json(
+          {
+            totalServices: totalServices,
+            serviceDetails
           });
-    }
-    else{
-      const totalServices = await Bookmark.countDocuments({ userId });
-      console.log(totalServices)
-      const serviceDetails = await Bookmark.find({ userId: req.query.userId }).populate('serviceId');
-  
-      if (!serviceDetails) {
-        return res.status(404).json({ message: 'No Bookmark found' });
       }
-      res.json(
-          {   totalServices:totalServices,
-              serviceDetails
+      else {
+        const totalServices = await Bookmark.countDocuments({ userId });
+        console.log(totalServices)
+        const serviceDetails = await Bookmark.find({ userId: req.query.userId }).populate('serviceId');
+
+        if (!serviceDetails) {
+          return res.status(404).json({ message: 'No Bookmark found' });
+        }
+        res.json(
+          {
+            totalServices: totalServices,
+            serviceDetails
           });
+      }
+
     }
 
-  } 
-  
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
