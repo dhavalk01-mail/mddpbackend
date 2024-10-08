@@ -23,13 +23,20 @@ const addSubscription = async (req, res) => {
     // is_approved: "approved"
   });
   if (existingSubscription) {
-    return res.status(400).json({ msg: "Subscription already exists" });
+    const status = existingSubscription.is_approved
+    if (status == 'pending' || status == 'rejected') {
+      return res.status(400).json({ msg: "Subscription is " + status });
+    }
+    else {
+      return res.status(400).json({ msg: "Subscription already exists " });
+    }
   } else {
     // create a record in the database
     try {
       const newSubscription = await Subscription.create({
         userId: req.body.userId,
-        serviceId: req.body.serviceId
+        serviceId: req.body.serviceId,
+        username: req.body.username
       });
       // const subscriptionID = newSubscription._id;
       return res.status(200).json({

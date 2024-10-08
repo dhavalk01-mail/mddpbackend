@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { type } from "os";
 
 const subscriptionSchema = new mongoose.Schema(
   { 
@@ -13,6 +12,9 @@ const subscriptionSchema = new mongoose.Schema(
 			enum: ["pending", "approved", "rejected"],
 			default: "pending"
 		},
+    username: {
+      type: String
+    },
     start_date: {
       type: Date,
       default: Date.now()
