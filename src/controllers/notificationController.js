@@ -40,7 +40,29 @@ const updateSubscriptionStatus = async (req, res) => {
   }
 };
 
+const userNotification = async (req, res) => {
+  try {
+    console.log(req.params.id)
+    const existingSubscription = await Subscription.find({
+      userId: req.params.id,
+      approvedStatus: { $ne: null },
+    });
+    console.log(existingSubscription)
+    if (existingSubscription) {
+      res.status(200).json({
+        existingSubscription
+      });
+    }
+    else {
+      return res.status(404).json({ message: 'Subscription not found' });
+    }
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+};
+
 export {
   getPendingSubscription,
-  updateSubscriptionStatus
+  updateSubscriptionStatus,
+  userNotification
 }

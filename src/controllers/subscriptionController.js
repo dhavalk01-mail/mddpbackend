@@ -36,7 +36,7 @@ const addSubscription = async (req, res) => {
       const newSubscription = await Subscription.create({
         userId: req.body.userId,
         serviceId: req.body.serviceId,
-        username: req.body.username
+        fullname: req.body.fullname
       });
       // const subscriptionID = newSubscription._id;
       return res.status(200).json({

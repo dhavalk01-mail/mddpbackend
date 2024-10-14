@@ -12,7 +12,7 @@ const subscriptionSchema = new mongoose.Schema(
 			enum: ["pending", "approved", "rejected"],
 			default: "pending"
 		},
-    username: {
+    fullname: {
       type: String
     },
     start_date: {

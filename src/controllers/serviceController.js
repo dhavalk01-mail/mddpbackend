@@ -145,13 +145,13 @@ const getServicesDetails = async (req, res) => {
     let is_bookmarked = false;
 
     //Getting user Details
-    if (req.get("Authorization")) {
-      const token = req.headers.authorization.split(' ')[1]; // Token comes as "Bearer token"
-      const tokenResponse = await getUserIdFromToken(token);
-      if (tokenResponse.userId == null) {
-        return res.status(401).json({ error: tokenResponse.error });
-      }
-      const userId = tokenResponse.userId;
+    if (req.query.userId) {
+      // const token = req.headers.authorization.split(' ')[1]; // Token comes as "Bearer token"
+      // const tokenResponse = await getUserIdFromToken(token);
+      // if (tokenResponse.userId == null) {
+      //   return res.status(401).json({ error: tokenResponse.error });
+      // }
+      const userId = req.query.userId;
       //Checking service subscribed or not
       is_subscribed = await Subscription.findOne({ $and: [{ userId: userId }, { serviceId: req.params.id }] });
       is_bookmarked = await Bookmark.findOne({ $and: [{ userId: userId }, { serviceId: req.params.id }] });

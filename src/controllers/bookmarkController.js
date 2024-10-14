@@ -5,12 +5,12 @@ import { getUserIdFromToken } from './helperController.js';
 // Toggle a bookmark
 const toggleBookmark = async (req, res) => {
   try {
-    const token = req.headers.authorization.split(' ')[1]; // Token comes as "Bearer token"
-    const tokenResponse = await getUserIdFromToken(token);
-    if (tokenResponse.userId == null) {
-      return res.status(401).json({ error: tokenResponse.error });
-    }
-    const userId = tokenResponse.userId;
+    // const token = req.headers.authorization.split(' ')[1]; // Token comes as "Bearer token"
+    // const tokenResponse = await getUserIdFromToken(token);
+    // if (tokenResponse.userId == null) {
+    //   return res.status(401).json({ error: tokenResponse.error });
+    // }
+    const userId = req.query.userId;
 
     const serviceId = req.params.serviceId;
     // console.log(serviceId)
@@ -40,14 +40,14 @@ const toggleBookmark = async (req, res) => {
 // Get all bookmarks for the user
 const getBookmark = async (req, res) => {
 
-  const token = req.headers.authorization.split(' ')[1]; // Token comes as "Bearer token"
-  if (!token) return res.status(404).json({ message: "Token not found" });
+  // const token = req.headers.authorization.split(' ')[1]; // Token comes as "Bearer token"
+  // if (!token) return res.status(404).json({ message: "Token not found" });
 
-  const tokenResponse = await getUserIdFromToken(token);
-  if (tokenResponse.userId == null) {
-    return res.status(401).json({ error: tokenResponse.error });
-  }
-  const userId = tokenResponse.userId;
+  // const tokenResponse = await getUserIdFromToken(token);
+  // if (tokenResponse.userId == null) {
+  //   return res.status(401).json({ error: tokenResponse.error });
+  // }
+  const userId = req.query.userId;
 
   try {
     const services = await Bookmark.find({ userId }).populate('serviceId');
