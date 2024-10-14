@@ -1,6 +1,6 @@
 import { Bookmark } from '../models/bookmarkModel.js';
 import { Service, serviceCategoryEnum, statusEnum } from '../models/serviceModel.js';
-import { getUserIdFromToken } from './helperController.js';
+// import { getUserIdFromToken } from './helperController.js';
 
 // Toggle a bookmark
 const toggleBookmark = async (req, res) => {
@@ -10,9 +10,10 @@ const toggleBookmark = async (req, res) => {
     // if (tokenResponse.userId == null) {
     //   return res.status(401).json({ error: tokenResponse.error });
     // }
-    const userId = req.query.userId;
-
+    // const userId = req.query.userId;
+    const userId = req.params.userId;
     const serviceId = req.params.serviceId;
+
     // console.log(serviceId)
     const service = await Service.findById(serviceId);
     if (!service) {
@@ -47,7 +48,8 @@ const getBookmark = async (req, res) => {
   // if (tokenResponse.userId == null) {
   //   return res.status(401).json({ error: tokenResponse.error });
   // }
-  const userId = req.query.userId;
+  const userId = req.params.userId;
+  // const userId = req.query.userId;
 
   try {
     const services = await Bookmark.find({ userId }).populate('serviceId');

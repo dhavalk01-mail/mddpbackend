@@ -43,8 +43,8 @@ router.get('/getSubscription', getSubscription)
 router.get('/getSubscription/:id', getSubscription)
 
 //Bookmark
-router.post("/toggleBookmark/:serviceId", toggleBookmark)
-router.get('/getBookmark', getBookmark)
+router.post("/toggleBookmark/:userId/:serviceId", toggleBookmark)
+router.get('/getBookmark/:userId', getBookmark)
 
 //report
 //router.get('/countServiceByStatus', countServiceByStatus)
