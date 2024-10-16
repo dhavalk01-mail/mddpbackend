@@ -1,5 +1,7 @@
 import Subscription from "../models/subscriptionModel.js";
 import zod from "zod";
+import { Notification } from "../models/notificationModel.js";
+import { Service, statusEnum, serviceCategoryEnum } from "../models/serviceModel.js";
 
 const schema = zod.object({
   userId: zod.string(),
@@ -22,13 +24,17 @@ const addSubscription = async (req, res) => {
     serviceId: req.body.serviceId,
     // is_approved: "approved"
   });
+
   if (existingSubscription) {
     const status = existingSubscription.is_approved
     if (status == 'pending' || status == 'rejected') {
       return res.status(400).json({ msg: "Subscription is " + status });
     }
     else {
-      return res.status(400).json({ msg: "Subscription already exists " });
+      return res.status(400).json({
+        msg: "Subscription already exists",
+        status: status
+      });
     }
   } else {
     // create a record in the database
@@ -38,6 +44,17 @@ const addSubscription = async (req, res) => {
         serviceId: req.body.serviceId,
         fullname: req.body.fullname
       });
+
+      if (newSubscription) {
+
+        const service = await Service.findById(req.body.serviceId).select('_id, title'); // fetch id and title only
+
+        const notification = await Notification.create({
+          senderId: req.body.userId,
+          receiverId: 0, // 0 is for Admin
+          message: { ...service.toObject(), ...{ 'subscriptionStatus': 'pending' } } // all service data+ subscriptionstatus
+        });
+      }
       // const subscriptionID = newSubscription._id;
       return res.status(200).json({
         newSubscription,

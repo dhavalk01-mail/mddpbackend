@@ -1,17 +1,17 @@
 import mongoose from "mongoose";
 
 const subscriptionSchema = new mongoose.Schema(
-  { 
+  {
     userId: String,
     serviceId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Service"
-    }, 
+    },
     is_approved: {
-			type: String,
-			enum: ["pending", "approved", "rejected"],
-			default: "pending"
-		},
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending"
+    },
     fullname: {
       type: String
     },

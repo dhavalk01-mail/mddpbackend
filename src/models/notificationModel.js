@@ -3,10 +3,12 @@ import mongoose from "mongoose";
 const notificationSchema = new mongoose.Schema(
     {
         senderId: {
-            required: true
+            type: String,
+            required: true //userId
         },
         receiverId: {
-            required: true
+            type: String,
+            required: true //admin 0
         },
         type: {
             type: String,
@@ -14,13 +16,13 @@ const notificationSchema = new mongoose.Schema(
             required: true,
             default: 'service'
         },
-        message: {
-            type: String,
+        message: {     // service title + status
+            type: Object,
             required: true
         },
         read: {
             type: Boolean,
-            default: false  //true = read
+            default: false  //true = read  read on open notification
         }
     },
     { timestamps: true },
