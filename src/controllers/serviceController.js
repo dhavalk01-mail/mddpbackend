@@ -136,7 +136,7 @@ const getServices = async (req, res) => {
   }
 };
 
-const getServicesDetails = async (req, res) => {
+const getServicesDetails = async (req, res) => {  
   if (req.params.id) {
     let subscribed = { subscribed: false };
     let is_subscribed = false;

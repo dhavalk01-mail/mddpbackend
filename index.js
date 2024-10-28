@@ -3,25 +3,37 @@ import 'dotenv/config'
 import express from "express";
 import connectDB from "./src/config/db.js";
 import router from "./src/routes/routes.js";
-// import swaggerJSDoc from "swagger-jsdoc";
-// import swaggerUI from "swagger-ui-express";
+import importExportRoute from './src/routes/importExportRoutes.js'
+//Swagger
+import swaggerUIPath from "swagger-ui-express";
+import swaggerjsonFilePath from "./src/swagger/docs/swagger.json" assert { type: "json" };
+
 // import servicedata from './servicedata.json' with { type: "json" };
 // import fs from 'fs'
 
 
 const app = express();
-
+app.set('views', './src/views');
+app.set('view engine', 'ejs');
 // Allow request from any source. In real production, this should be limited to allowed origins only
 app.use(cors());
 
 app.use(express.json());
 connectDB();
+
 app.use("/api", router);
+app.use('/importExport', importExportRoute)
 
 
 app.get("/ready", (req, res) => {
   res.send("Hello World!");
 });
+app.get('/upload', function(req, res) {
+  res.render('index');
+});
+
+
+app.use("/api-docs", swaggerUIPath.serve, swaggerUIPath.setup(swaggerjsonFilePath));
 
 /*
 app.get('/import', function (req, res) {
@@ -74,6 +86,7 @@ try {
  
   })
   // swaggerDocs(app, PORT);
+
 } catch (error) {
   console.error('Cannot connect to the server ->' + error.message);
 }

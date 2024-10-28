@@ -61,8 +61,10 @@ const updateSubscriptionStatus = async (req, res) => {
         const addUserNotification = await Notification.create({
           senderId: 0,
           receiverId: req.body.userId,
-          message: { ...service.toObject(), ...{ 'subscriptionStatus': req.body.action } } // all service data+ subscriptionstatus
+          read: false,
+          message: { ...service.toObject(), ...{ 'subscriptionStatus': req.body.action }, ...{ 'fullname': existingSubscription.fullname } } // all service data+ subscriptionstatus
         });
+
       }
 
       res.status(200).json({
@@ -100,7 +102,7 @@ const userNotification = async (req, res) => { //create same function adminnotif
   }
 };
 
-const MarkOneNotificationRead = async (req, res) => {
+const markOneNotificationRead = async (req, res) => {
   try {
     const updatenotification = await Notification.findByIdAndUpdate(
       req.params.notificationId,
@@ -115,7 +117,7 @@ const MarkOneNotificationRead = async (req, res) => {
   }
 };
 
-const MarkReadAllNotification = async (req, res) => {
+const markReadAllNotification = async (req, res) => {
   try {
     const id = req.params.userId ? req.params.userId : 0;
 
@@ -132,13 +134,30 @@ const MarkReadAllNotification = async (req, res) => {
   }
 };
 
+const allReadNotifications = async (req, res) => {
+  try {
+    const id = req.params.userId ? req.params.userId : 0;
+    const countReadNotification = await Notification.countDocuments({ $and: [{ read: true }, { receiverId: id }] });
+    const readNotification = await Notification.find(
+      { receiverId: id, read: true },
+    );
+    res.status(200).json({
+      countReadNotification,
+      readNotification
+    });
+
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+};
 
 export {
   getPendingSubscription,
   updateSubscriptionStatus,
   userNotification,
   //MarkAllReadByAdmin,
-  MarkReadAllNotification,
+  markReadAllNotification,
   adminNotification,
-  MarkOneNotificationRead
+  markOneNotificationRead,
+  allReadNotifications
 }

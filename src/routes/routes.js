@@ -1,4 +1,5 @@
 import express from "express"
+
 import {
   getServices,
   getServicesDetails,
@@ -26,57 +27,109 @@ import {
   updateSubscriptionStatus,
   userNotification,
   //MarkAllReadByAdmin, 
-  MarkReadAllNotification,
+  markReadAllNotification,
   adminNotification,
-  MarkOneNotificationRead
+  markOneNotificationRead,
+  allReadNotifications
 } from "../controllers/notificationController.js"
 
 const router = express.Router({ mergeParams: true })
 
 // services
-router.get('/getServices/:id', getServicesDetails)
-router.get('/getServices', getServices)
-router.post("/addService", addService)
-router.put('/updateService/:id', updateService)
-router.delete('/deleteService/:id', deleteService)
-router.get('/getServiceListByStatus', getServiceListByStatus)
+router.get('/getServices/:id',
+  // #swagger.tags = ['Services'] 
+  getServicesDetails
+)
+router.get('/getServices',
+  // #swagger.tags = ['Services'] 
+  getServices)
+router.post("/addService",
+  // #swagger.tags = ['Services'] 
+  addService)
+router.put('/updateService/:id',
+  // #swagger.tags = ['Services'] 
+  updateService)
+router.delete('/deleteService/:id',
+  // #swagger.tags = ['Services'] 
+  deleteService)
+router.get('/getServiceListByStatus',
+  // #swagger.tags = ['Services'] 
+  getServiceListByStatus)
 
 // toggleFeatured
-router.patch('/toggleFeatured/:id', toggleFeatured)
-router.get('/getFeaturedServices', getFeaturedServices)
+router.patch('/toggleFeatured/:id',
+  // #swagger.tags = ['Services'] 
+  toggleFeatured)
+router.get('/getFeaturedServices',
+  // #swagger.tags = ['Services'] 
+  getFeaturedServices)
 
 //Subscription
-router.post("/addSubscription", addSubscription)
-router.get('/getSubscription', getSubscription)
-router.get('/getSubscription/:id', getSubscription)
+router.post("/addSubscription",
+  // #swagger.tags = ['Subscription']
+  addSubscription)
+router.get('/getSubscription',
+  // #swagger.tags = ['Subscription']
+  getSubscription)
+router.get('/getSubscription/:id',
+  // #swagger.tags = ['Subscription']
+  getSubscription)
 
 //Bookmark
-router.post("/toggleBookmark/:userId/:serviceId", toggleBookmark)
-router.get('/getBookmark/:userId', getBookmark)
+router.post("/toggleBookmark/:userId/:serviceId",
+  // #swagger.tags = ['Bookmark']
+  toggleBookmark)
+router.get('/getBookmark/:userId',
+  // #swagger.tags = ['Bookmark']
+  getBookmark)
 
 //report
 //router.get('/countServiceByStatus', countServiceByStatus)
 //router.get('/countServiceByCategory', countServiceByCategory)
-
-router.get('/serviceCounts', serviceCounts)
-
-//reports
-// router.get('/serviceList', serviceList)
-// router.get('/serviceList/:id', serviceList)
-
-router.get('/report/servicesandSubscriber/:serviceId', getServicesSubscribedByUsers)
-router.get('/report/servicesandSubscriber', getServicesSubscribedByUsers)
-router.get('/report/usersandSubscribedServices/:userId', getUsersSubscribedToServices)
-router.get('/report/usersandSubscribedServices', getUsersSubscribedToServices)
+router.get('/serviceCounts',
+  // #swagger.tags = ['Report']
+  serviceCounts)
+router.get('/report/servicesandSubscriber/:serviceId',
+  // #swagger.tags = ['Report']
+  getServicesSubscribedByUsers)
+router.get('/report/servicesandSubscriber',
+  // #swagger.tags = ['Report']
+  getServicesSubscribedByUsers)
+router.get('/report/usersandSubscribedServices/:userId',
+  // #swagger.tags = ['Report']
+  getUsersSubscribedToServices)
+router.get('/report/usersandSubscribedServices',
+  // #swagger.tags = ['Report']
+  getUsersSubscribedToServices)
 
 
 //notification
-router.get('/getPendingSubscriptions', getPendingSubscription)
-router.put('/updateSubscriptionStatus', updateSubscriptionStatus)
-router.get('/userNotification/:userId', userNotification)
-router.put('/MarkReadAllNotification', MarkReadAllNotification)
-router.put('/MarkReadAllNotification/:userId', MarkReadAllNotification)
-router.get('/adminNotification', adminNotification)
-router.put('/MarkOneNotificationRead/:notificationId', MarkOneNotificationRead)
+router.get('/getPendingSubscriptions',
+  // #swagger.tags = ['Notification']
+  getPendingSubscription)
+router.put('/updateSubscriptionStatus',
+  // #swagger.tags = ['Notification']
+  updateSubscriptionStatus)
+router.get('/userNotification/:userId',
+  // #swagger.tags = ['Notification']
+  userNotification)
+router.put('/markReadAllNotification',
+  // #swagger.tags = ['Notification']
+  markReadAllNotification)
+router.put('/markReadAllNotification/:userId',
+  // #swagger.tags = ['Notification']
+  markReadAllNotification)
+router.get('/adminNotification',
+  // #swagger.tags = ['Notification']
+  adminNotification)
+router.put('/markOneNotificationRead/:notificationId',
+  // #swagger.tags = ['Notification']
+  markOneNotificationRead)
+router.get('/allReadNotifications',
+  // #swagger.tags = ['Notification']
+  allReadNotifications)
+router.get('/allReadNotifications/:userId',
+  // #swagger.tags = ['Notification']
+  allReadNotifications)
 
 export default router

@@ -1,7 +1,7 @@
 import Subscription from "../models/subscriptionModel.js";
 import zod from "zod";
 import { Notification } from "../models/notificationModel.js";
-import { Service, statusEnum, serviceCategoryEnum } from "../models/serviceModel.js";
+import { Service } from "../models/serviceModel.js";
 
 const schema = zod.object({
   userId: zod.string(),
@@ -52,7 +52,7 @@ const addSubscription = async (req, res) => {
         const notification = await Notification.create({
           senderId: req.body.userId,
           receiverId: 0, // 0 is for Admin
-          message: { ...service.toObject(), ...{ 'subscriptionStatus': 'pending' } } // all service data+ subscriptionstatus
+          message: { ...service.toObject(), ...{ 'subscriptionStatus': 'pending' }, ...{ 'fullname': req.body.fullname } } // all service data+ subscriptionstatus
         });
       }
       // const subscriptionID = newSubscription._id;
