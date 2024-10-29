@@ -1,26 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MongoDB Import/Export</title>
-    <link rel="stylesheet" href="/style.css">
+
+    <style>
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+    </style>
+
 </head>
+
 <body>
     <div class="container">
         <h1>MongoDB Import/Export</h1>
-        
+        <br>
         <h2>Import Collection (JSON)</h2>
         <form action="/importExport/importAllCollections" method="post" enctype="multipart/form-data">
             <label for="file">Choose JSON file:</label>
             <input type="file" name="file" id="file" accept=".json" required />
             <button type="submit">Import</button>
         </form>
- 
+        <br>
+        <hr>
         <h2>Export Collection</h2>
         <form action="/importExport/exportAllCollections" method="get">
             <button type="submit">Export as JSON</button>
         </form>
     </div>
 </body>
+
 </html>

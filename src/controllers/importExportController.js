@@ -30,22 +30,23 @@ const importAllCollections = async (req, res) => {
     const db = mongoose.connection.db
     const filePath = req.file.path
     const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'))
-
+    console.log('-----IMPORT START-----');
     try {
-      for (const collectionName in data) {
-        const documents = data[collectionName]
-        if (documents.length > 0) {
-          //console.log("=========",db.collection(collectionName))
-          await db.collection(collectionName).deleteMany({});
-          //await db.collection(collectionName).insertMany(documents)  
+      for (const [collectionName, documents] of Object.entries(data)) {
+        const collection = db.collection(collectionName);
 
-          await db.collection(collectionName).insertMany(documents.map(item => autoDetectObjectIds(item)));
+        await collection.deleteMany({});
+        console.log(`Cleard existing data in ${collectionName} collection`);
+
+        if (documents.length > 0) {
+          await collection.insertMany(documents.map(item => autoDetectObjectIds(item)));
+          console.log(`Imported data To ${collectionName} collection`);
         }
       }
-
-      res.status(500).send('Imported successfully');
+      console.log('-----IMPORT END-----');
+      res.status(200).send('Imported successfully');
     } catch (error) {
-      // console.log("----------", error.message)
+      console.log("-----ERROR----- ", error.message)
       res.status(500).send('Failed to import data');
     } finally {
       fs.unlinkSync(filePath); // Delete the file after import
