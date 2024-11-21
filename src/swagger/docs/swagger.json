@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://mddpbackend.onrender.com/api"
+      "url": "http://10.63.18.82:4000/api"
     }
   ],
   "tags": [

@@ -53,12 +53,14 @@ const getBookmark = async (req, res) => {
 
   try {
     const services = await Bookmark.find({ userId }).populate('serviceId');
-    
     // Convert into Human Readble Format
     const serviceResponce = services.map(service => ({
       ...service.serviceId.toObject(),
       service_category: service.serviceId.service_category.map(sc => serviceCategoryEnum[sc]),
       status: statusEnum[service.serviceId.status],
+      bookmarkId: service._id,
+      createdAt: service.createdAt,
+      updatedAt: service.updatedAt,
     }));
 
     res.status(200).json({
