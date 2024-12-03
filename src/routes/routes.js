@@ -21,7 +21,12 @@ import {
 
 import { toggleBookmark, getBookmark } from "../controllers/bookmarkController.js"
 
-import { getServicesSubscribedByUsers, getUsersSubscribedToServices } from "../controllers/reportController.js"
+import { 
+  getServicesSubscribedByUsers, 
+  getUsersSubscribedToServices,
+  getPopularSubscription,
+  getMonthWiseSubscription
+} from "../controllers/reportController.js"
 import {
   getPendingSubscription,
   updateSubscriptionStatus,
@@ -32,6 +37,7 @@ import {
   markOneNotificationRead,
   allReadNotifications
 } from "../controllers/notificationController.js"
+import getMetricsController from "../controllers/prometheusController.js"
 
 const router = express.Router({ mergeParams: true })
 
@@ -101,7 +107,12 @@ router.get('/report/usersandSubscribedServices/:userId',
 router.get('/report/usersandSubscribedServices',
   // #swagger.tags = ['Report']
   getUsersSubscribedToServices)
-
+router.get('/report/popular_services_with_count',
+  // #swagger.tags = ['Report']
+  getPopularSubscription)
+router.get('/report/monthwise_services',
+  // #swagger.tags = ['Report']
+  getMonthWiseSubscription)
 
 //notification
 router.get('/getPendingSubscriptions',
@@ -131,5 +142,9 @@ router.get('/allReadNotifications',
 router.get('/allReadNotifications/:userId',
   // #swagger.tags = ['Notification']
   allReadNotifications)
+
+
+//prometheusController
+router.get('/metrics', getMetricsController);
 
 export default router

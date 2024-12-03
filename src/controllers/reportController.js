@@ -190,7 +190,168 @@ const getUsersSubscribedToServices = async (req, res) => {
   }
 };
 
+// Popular Services
+const getPopularSubscription = async(req,res) =>{
+  try{
+    const topServices= await Subscription.aggregate([
+      {$match: {is_approved: "approved"}},
+      {$group: {_id: "$serviceId", count: {$sum:1 } }},
+      {$sort: {count: -1, _id: 1}},
+      {$limit: 5},
+      {
+        $lookup:{
+          from: "services",
+          localField: "_id",
+          foreignField: "_id",
+          as: "serviceDetails"
+        }
+      },
+      {
+        $unwind: "$serviceDetails"
+      },
+      {
+        $project:{
+          serviceId: "$_id",
+          title: "$serviceDetails.title",
+          count: 1,
+          _id: 0
+        }
+      }
+    ])
+
+    console.log(topServices,'topServices-=-=')
+
+    res.status(200).json({
+      success: true,
+      data: topServices
+    })
+  } catch(error){
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "An error occured while fetching top subscribed services"
+    })
+  }
+}
+
+const getMonthWiseSubscription = async(req,res)=>{
+  try {
+    const result = await Subscription.aggregate([
+      // Match documents within the last six months
+      {
+        $match: {
+          start_date: {
+            $gte: new Date(new Date().setMonth(new Date().getMonth() - 5)), // Last 6 months
+          },
+        },
+      },
+      // Extract month and year using $dateToParts
+      {
+        $addFields: {
+          dateParts: {
+            $dateToParts: { date: "$start_date", timezone: "Asia/Kolkata" },
+          },
+        },
+      },
+      {
+        $project: {
+          month: "$dateParts.month",
+          year: "$dateParts.year",
+          is_approved: 1,
+        },
+      },
+      // Group by month, year, and approval status
+      {
+        $group: {
+          _id: {
+            month: "$month",
+            year: "$year",
+            is_approved: "$is_approved",
+          },
+          count: { $sum: 1 },
+        },
+      },
+      // Sort by year and month in descending order
+      {
+        $sort: {
+          "_id.year": -1,
+          "_id.month": -1,
+        },
+      },
+      // Group by approval status and prepare data array
+      {
+        $group: {
+          _id: "$_id.is_approved",
+          data: {
+            $push: {
+              month: "$_id.month",
+              year: "$_id.year",
+              count: "$count",
+            },
+          },
+        },
+      },
+      // Map last six months dynamically
+      {
+        $project: {
+          _id: 0,
+          is_approved: "$_id",
+          data: {
+            $map: {
+              input: [0, 1, 2, 3, 4, 5], // Indices for the last 6 months
+              as: "offset",
+              in: {
+                month: {
+                  $arrayElemAt: [
+                    ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+                    {
+                      $subtract: [
+                        {
+                          $mod: [
+                            { $add: [{ $month: new Date() }, { $subtract: [0, "$$offset"] }] },
+                            12,
+                          ],
+                        },
+                        1, // Adjust for 0-indexed array
+                      ],
+                    },
+                  ],
+                },
+                count: {
+                  $reduce: {
+                    input: "$data",
+                    initialValue: 0,
+                    in: {
+                      $cond: [
+                        {
+                          $and: [
+                            { $eq: ["$$this.month", { $add: [{ $month: new Date() }, { $subtract: [0, "$$offset"] }] }] },
+                            { $eq: ["$$this.year", { $year: { $subtract: [new Date(), { $multiply: [30 * 24 * 60 * 60 * 1000, "$$offset"] }] } }] },
+                          ],
+                        },
+                        "$$this.count",
+                        "$$value",
+                      ],
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    ]);
+ 
+    // Respond with the result
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
 export {
   getServicesSubscribedByUsers,
-  getUsersSubscribedToServices
+  getUsersSubscribedToServices,
+  getPopularSubscription,
+  getMonthWiseSubscription
 };
