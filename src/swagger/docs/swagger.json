@@ -612,6 +612,38 @@
         }
       }
     },
+    "/report/popular_services_with_count": {
+      "get": {
+        "tags": [
+          "Report"
+        ],
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/report/monthwise_services": {
+      "get": {
+        "tags": [
+          "Report"
+        ],
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/getPendingSubscriptions": {
       "get": {
         "tags": [
@@ -821,6 +853,16 @@
           },
           "500": {
             "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/metrics": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
           }
         }
       }
