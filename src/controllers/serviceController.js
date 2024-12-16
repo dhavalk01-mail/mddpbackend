@@ -1,7 +1,6 @@
 import { Service, statusEnum, serviceCategoryEnum } from "../models/serviceModel.js";
 import Subscription from "../models/subscriptionModel.js"
 import { Bookmark } from "../models/bookmarkModel.js";
-import { getUserIdFromToken } from "./helperController.js";
 import zod from "zod";
 
 const schema = zod.object({
@@ -30,23 +29,39 @@ const updateService = async (req, res) => {
 
 };
 
-const deleteService = async (req, res) => {
 
+/*
+* modified by Dhaval 06-09
+*/
+const deleteService = async (req, res) => {
   try {
-    const delServ = await Service.findByIdAndDelete(req.params.id)
-    if (!delServ) {
-      return res.status(404).json({ message: 'Service not found' });
+    const serviceId = req.params.id;
+
+    //check if service exists
+    const service = await Service.findById(serviceId);
+    if (!service) {
+      res.status(400).json({ message: "service not found" });
     }
-    res.json(delServ);
+
+    //delete service
+    const deletedService = await Service.findByIdAndDelete(serviceId)
+
+    //delete bookmark
+    await Bookmark.deleteMany({ serviceId })
+
+    //delete subscription
+    await Subscription.deleteMany({ serviceId })
+
+    //delete from notification
+    await Notification.deleteMany({ message: new RegExp(serviceId, 'i') })
+
+    res.status(200).json({ message: "Service deleted successfully" } , deletedService);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 
 };
 
-/*
-* modified by Dhaval 06-09
-*/
 
 // generate code for /getServices with pagination, search and filter
 const getServices = async (req, res) => {
@@ -136,7 +151,7 @@ const getServices = async (req, res) => {
   }
 };
 
-const getServicesDetails = async (req, res) => {  
+const getServicesDetails = async (req, res) => {
   if (req.params.id) {
     let subscribed = { subscribed: false };
     let is_subscribed = false;

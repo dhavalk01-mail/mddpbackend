@@ -6,7 +6,7 @@ import router from "./src/routes/routes.js";
 import importExportRoute from './src/routes/importExportRoutes.js'
 //Swagger
 import swaggerUIPath from "swagger-ui-express";
-import swaggerjsonFilePath from "./src/swagger/docs/swagger.json" assert { type: "json" };
+import swaggerjsonFilePath from "./swagger/docs/swagger.json" assert { type: "json" };
 
 // import servicedata from './servicedata.json' with { type: "json" };
 // import fs from 'fs'
