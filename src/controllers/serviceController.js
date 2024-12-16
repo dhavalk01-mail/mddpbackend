@@ -1,6 +1,7 @@
 import { Service, statusEnum, serviceCategoryEnum } from "../models/serviceModel.js";
 import Subscription from "../models/subscriptionModel.js"
 import { Bookmark } from "../models/bookmarkModel.js";
+import { Notification } from "../models/notificationModel.js";
 import zod from "zod";
 
 const schema = zod.object({
@@ -40,7 +41,7 @@ const deleteService = async (req, res) => {
     //check if service exists
     const service = await Service.findById(serviceId);
     if (!service) {
-      res.status(400).json({ message: "service not found" });
+      return res.status(400).json({ message: "service not found" });
     }
 
     //delete service
@@ -55,9 +56,9 @@ const deleteService = async (req, res) => {
     //delete from notification
     await Notification.deleteMany({ message: new RegExp(serviceId, 'i') })
 
-    res.status(200).json({ message: "Service deleted successfully" } , deletedService);
+    return res.status(200).json({ message: "Service deleted successfully" }, deletedService);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 
 };
