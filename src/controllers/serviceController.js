@@ -38,29 +38,36 @@ const deleteService = async (req, res) => {
   try {
     const serviceId = req.params.id;
 
-    //check if service exists
+    // Check if service exists
     const service = await Service.findById(serviceId);
     if (!service) {
-      return res.status(400).json({ message: "service not found" });
+      return res.status(404).json({ message: "Service not found" });
     }
 
-    //delete service
-    const deletedService = await Service.findByIdAndDelete(serviceId)
+    // Delete all related records in parallel for better performance
+    const [deletedService, bookmarkResult, notificationResult, subscriptionResult] = await Promise.all([
+      Service.findByIdAndDelete(serviceId),
+      Bookmark.deleteMany({ serviceId }),
+      Notification.deleteMany({ message: new RegExp(serviceId, 'i') }),
+      Subscription.deleteMany({ serviceId })
+    ]);
 
-    //delete bookmark
-    await Bookmark.deleteMany({ serviceId })
+    // Log deletion results for monitoring
+    console.log(`Deleted ${bookmarkResult.deletedCount} bookmarks`);
+    console.log(`Deleted ${notificationResult.deletedCount} notifications`); 
+    console.log(`Deleted ${subscriptionResult.deletedCount} subscriptions`);
 
-    //delete subscription
-    await Subscription.deleteMany({ serviceId })
+    return res.status(200).json({ 
+      message: "Service and all related records deleted successfully", 
+      deletedService 
+    });
 
-    //delete from notification
-    await Notification.deleteMany({ message: new RegExp(serviceId, 'i') })
-
-    return res.status(200).json({ message: "Service deleted successfully" }, deletedService);
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json({ 
+      message: "Error deleting service",
+      error: error.message 
+    });
   }
-
 };
 
 
