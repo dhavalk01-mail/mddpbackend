@@ -21,8 +21,8 @@ import {
 
 import { toggleBookmark, getBookmark } from "../controllers/bookmarkController.js"
 
-import { 
-  getServicesSubscribedByUsers, 
+import {
+  getServicesSubscribedByUsers,
   getUsersSubscribedToServices,
   getPopularSubscription,
   getMonthWiseSubscription
@@ -37,7 +37,7 @@ import {
   markOneNotificationRead,
   allReadNotifications
 } from "../controllers/notificationController.js"
-import getMetricsController from "../controllers/prometheusController.js"
+import { getMetricsController, getHealthStatus } from "../controllers/matricsController.js"
 
 const router = express.Router({ mergeParams: true })
 
@@ -144,7 +144,13 @@ router.get('/allReadNotifications/:userId',
   allReadNotifications)
 
 
-//prometheusController
-router.get('/metrics', getMetricsController);
+//metricsController
+router.get('/metrics',
+  // #swagger.tags = ['Metrics Data']
+  getMetricsController);
+
+router.get('/healthstatus',
+  // #swagger.tags = ['Metrics Data']
+  getHealthStatus);
 
 export default router

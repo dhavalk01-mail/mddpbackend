@@ -1,7 +1,10 @@
-import { Service, statusEnum, serviceCategoryEnum } from "../models/serviceModel.js";
-import Subscription from "../models/subscriptionModel.js"
+import {
+  Service,
+  statusEnum,
+  serviceCategoryEnum,
+} from "../models/serviceModel.js";
+import Subscription from "../models/subscriptionModel.js";
 import { Bookmark } from "../models/bookmarkModel.js";
-import { Notification } from "../models/notificationModel.js";
 import zod from "zod";
 
 const schema = zod.object({
@@ -13,27 +16,51 @@ const schema = zod.object({
   git_endpoint: zod.string(),
   helm_endpoint: zod.string(),
   status: zod.enum(Object.keys(statusEnum)),
-  tags: zod.array(zod.string())
+  tags: zod.array(zod.string()),
 });
 
 const updateService = async (req, res) => {
-
   try {
-    const updServ = await Service.findByIdAndUpdate(req.params.id, req.body)
-    if (!updServ) {
-      return res.status(404).json({ message: 'Service not found' });
+    // Validate request body against schema
+    const validatedData = schema.safeParse(req.body);
+    if (!validatedData.success) {
+      return res.status(400).json({
+        error: "Invalid input",
+        details: validatedData.error.issues
+      });
     }
-    res.json(updServ);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
 
+    // Use findByIdAndUpdate with options to return updated document and run validators
+    const updServ = await Service.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { 
+        new: true, // Return updated document
+        runValidators: true // Run model validators
+      }
+    );
+
+    if (!updServ) {
+      return res.status(404).json({ message: "Service not found" });
+    }
+
+    // Convert to human readable format like other endpoints
+    const serviceResponse = {
+      ...updServ.toObject(),
+      service_category: updServ.service_category.map(sc => serviceCategoryEnum[sc]),
+      status: statusEnum[updServ.status]
+    };
+
+    res.status(200).json(serviceResponse);
+
+  } catch (error) {
+    res.status(500).json({ 
+      message: "Error updating service",
+      error: error.message 
+    });
+  }
 };
 
-
-/*
-* modified by Dhaval 06-09
-*/
 const deleteService = async (req, res) => {
   try {
     const serviceId = req.params.id;
@@ -45,27 +72,31 @@ const deleteService = async (req, res) => {
     }
 
     // Delete all related records in parallel for better performance
-    const [deletedService, bookmarkResult, notificationResult, subscriptionResult] = await Promise.all([
+    const [
+      deletedService,
+      bookmarkResult,
+      notificationResult,
+      subscriptionResult,
+    ] = await Promise.all([
       Service.findByIdAndDelete(serviceId),
       Bookmark.deleteMany({ serviceId }),
-      Notification.deleteMany({ message: new RegExp(serviceId, 'i') }),
-      Subscription.deleteMany({ serviceId })
+      Notification.deleteMany({ message: new RegExp(serviceId, "i") }),
+      Subscription.deleteMany({ serviceId }),
     ]);
 
     // Log deletion results for monitoring
     console.log(`Deleted ${bookmarkResult.deletedCount} bookmarks`);
-    console.log(`Deleted ${notificationResult.deletedCount} notifications`); 
+    console.log(`Deleted ${notificationResult.deletedCount} notifications`);
     console.log(`Deleted ${subscriptionResult.deletedCount} subscriptions`);
 
-    return res.status(200).json({ 
-      message: "Service and all related records deleted successfully", 
-      deletedService 
+    return res.status(200).json({
+      message: "Service and all related records deleted successfully",
+      deletedService,
     });
-
   } catch (error) {
-    return res.status(500).json({ 
+    return res.status(500).json({
       message: "Error deleting service",
-      error: error.message 
+      error: error.message,
     });
   }
 };
@@ -78,16 +109,18 @@ const getServices = async (req, res) => {
     // Pagination: page number and limit per page (default 5)
     const page = parseInt(req.query.page) || 1;
     const limitQuery = req.query.limit;
-    const limit = limitQuery === 'all' ? 0 : parseInt(req.query.limit) || 5;
+    const limit = limitQuery === "all" ? 0 : parseInt(req.query.limit) || 5;
     const skip = (page - 1) * limit;
 
     // Search query
-    const searchQuery = req.query.search || '';
+    const searchQuery = req.query.search || "";
 
     // Fliter options
-    const serviceCategory = req.query.service_category ? req.query.service_category.split(',') : [];
-    const status = req.query.status ? req.query.status.split(',') : [];
-    const tags = req.query.tags ? req.query.tags.split(',') : [];
+    const serviceCategory = req.query.service_category
+      ? req.query.service_category.split(",")
+      : [];
+    const status = req.query.status ? req.query.status.split(",") : [];
+    const tags = req.query.tags ? req.query.tags.split(",") : [];
 
     // Build query object
     const query = {};
@@ -95,9 +128,9 @@ const getServices = async (req, res) => {
     //Search query in title, short_description, description, tags
     if (searchQuery) {
       query.$or = [
-        { title: { $regex: searchQuery, $options: 'i' } },
-        { short_description: { $regex: searchQuery, $options: 'i' } },
-        { detailed_description: { $regex: searchQuery, $options: 'i' } },
+        { title: { $regex: searchQuery, $options: "i" } },
+        { short_description: { $regex: searchQuery, $options: "i" } },
+        { detailed_description: { $regex: searchQuery, $options: "i" } },
       ];
     }
 
@@ -117,16 +150,25 @@ const getServices = async (req, res) => {
     }
 
     // Filter by Bookmark (if userId is provided and isBookmarked=true)
-    if (userId && isBookmarked === 'true') {
-      const bookmarkedServices = await Bookmark.find({ userId: userId }).select('serviceId');
-      const bookmarkedServiceIds = bookmarkedServices.map(bookmark => bookmark.serviceId);
+    if (userId && isBookmarked === "true") {
+      const bookmarkedServices = await Bookmark.find({ userId: userId }).select(
+        "serviceId"
+      );
+      const bookmarkedServiceIds = bookmarkedServices.map(
+        (bookmark) => bookmark.serviceId
+      );
       query._id = { $in: bookmarkedServiceIds };
     }
 
     // Filter by Subscription (if userId is provided and subscriptionStatus is provided)
     if (userId && subscriptionStatus) {
-      const subscribedServices = await Subscription.find({ userId: userId, is_approved: subscriptionStatus }).select('serviceId');
-      const subscribedServiceIds = subscribedServices.map(sub => sub.serviceId);
+      const subscribedServices = await Subscription.find({
+        userId: userId,
+        is_approved: subscriptionStatus,
+      }).select("serviceId");
+      const subscribedServiceIds = subscribedServices.map(
+        (sub) => sub.serviceId
+      );
       query._id = { $in: subscribedServiceIds };
     }
 
@@ -134,26 +176,26 @@ const getServices = async (req, res) => {
     const totalServices = await Service.countDocuments(query);
 
     // Get services with pagination and filter
-    const services = await Service
-      .find(query)
+    const services = await Service.find(query)
       .limit(limit)
       .skip(skip)
       .sort({ createdAt: -1 });
 
     // Convert into Human Readble Format
-    const serviceResponce = services.map(service => ({
+    const serviceResponce = services.map((service) => ({
       ...service.toObject(),
-      service_category: service.service_category.map(sc => serviceCategoryEnum[sc]),
+      service_category: service.service_category.map(
+        (sc) => serviceCategoryEnum[sc]
+      ),
       status: statusEnum[service.status],
     }));
 
     res.json({
       totalServices,
-      currentPage: limitQuery === 'all' ? 1 : page,
-      totalPages: limitQuery === 'all' ? 1 : Math.ceil(totalServices / limit),
-      services: serviceResponce
+      currentPage: limitQuery === "all" ? 1 : page,
+      totalPages: limitQuery === "all" ? 1 : Math.ceil(totalServices / limit),
+      services: serviceResponce,
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -176,22 +218,30 @@ const getServicesDetails = async (req, res) => {
       // }
       const userId = req.query.userId;
       //Checking service subscribed or not
-      is_subscribed = await Subscription.findOne({ $and: [{ userId: userId }, { serviceId: req.params.id }] });
-      is_bookmarked = await Bookmark.findOne({ $and: [{ userId: userId }, { serviceId: req.params.id }] });
+      is_subscribed = await Subscription.findOne({
+        $and: [{ userId: userId }, { serviceId: req.params.id }],
+      });
+      is_bookmarked = await Bookmark.findOne({
+        $and: [{ userId: userId }, { serviceId: req.params.id }],
+      });
     }
 
-    const service = await Service.findById(req.params.id).populate('dependent_service');
+    const service = await Service.findById(req.params.id).populate(
+      "dependent_service"
+    );
 
     if (!service) {
-      return res.status(404).json({ message: 'Service not found' });
+      return res.status(404).json({ message: "Service not found" });
     }
 
     const serviceResponce = {
       ...service.toObject(),
-      service_category: service.service_category.map(sc => serviceCategoryEnum[sc]),
+      service_category: service.service_category.map(
+        (sc) => serviceCategoryEnum[sc]
+      ),
       status: statusEnum[service.status],
       service_category_key: service.service_category,
-      status_key: service.status
+      status_key: service.status,
     };
 
     if (is_subscribed) {
@@ -203,13 +253,13 @@ const getServicesDetails = async (req, res) => {
       bookmarked = { bookmarked: true };
     }
 
-    res.status(200).json({ serviceDetails: { ...serviceResponce, ...subscribed, ...bookmarked } });
-
+    res.status(200).json({
+      serviceDetails: { ...serviceResponce, ...subscribed, ...bookmarked },
+    });
   } else {
-    return res.status(404).json({ message: 'Invalid Service ID' });
+    return res.status(404).json({ message: "Invalid Service ID" });
   }
 };
-
 
 const addService = async (req, res) => {
   const newSer = schema.safeParse(req.body);
@@ -217,10 +267,9 @@ const addService = async (req, res) => {
   if (!newSer.success) {
     return res.status(404).json({
       err: "incorrect inputs",
-      msg: newSer.error.issues
+      msg: newSer.error.issues,
     });
   }
-
 
   try {
     // create new service
@@ -237,22 +286,25 @@ const addService = async (req, res) => {
       status: req.body.status,
       lead_instructor: req.body.lead_instructor,
       developers: req.body.developers,
-      is_featured: req.body.is_featured
+      is_featured: req.body.is_featured,
+      live_status_url: req.body.live_status_url,
+      prometheus_metrics_url: req.body.prometheus_metrics_url,
     });
 
     // Convert into Human Readble Format
     const serviceResponce = {
       ...newService.toObject(),
-      service_category: newService.service_category.map(sc => serviceCategoryEnum[sc]),
+      service_category: newService.service_category.map(
+        (sc) => serviceCategoryEnum[sc]
+      ),
       status: statusEnum[newService.status],
     };
     res.status(201).json({
       msg: "Service added successfully",
       service: serviceResponce,
     });
-
   } catch (error) {
-    console.error('Error adding service:', error);
+    console.error("Error adding service:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -347,7 +399,7 @@ const toggleFeatured = async (req, res) => {
     // Find the service by ID
     const service = await Service.findById(serviceId);
     if (!service) {
-      return res.status(404).json({ message: 'Service not found' });
+      return res.status(404).json({ message: "Service not found" });
     }
     // Toggle the is_featured field
     service.is_featured = !service.is_featured;
@@ -355,63 +407,61 @@ const toggleFeatured = async (req, res) => {
     await service.save();
     res.json({
       message: `Service featured status updated to ${service.is_featured}`,
-      service
+      service,
     });
   } catch (err) {
-    console.error('Error toggling featured status:', err);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error toggling featured status:", err);
+    res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 
 const getFeaturedServices = async (req, res) => {
   try {
     // Query to find only featured services
     const query = { is_featured: true };
     // Get all featured services sorted by createdAt descending
-    const services = await Service.find(query)
-      .sort({ createdAt: -1 }); // Descending sort by createdAt
+    const services = await Service.find(query).sort({ createdAt: -1 }); // Descending sort by createdAt
     res.json({
       totalServices: services.length,
-      services
+      services,
     });
   } catch (err) {
-    console.error('Error fetching featured services:', err);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error fetching featured services:", err);
+    res.status(500).json({ message: "Internal server error" });
   }
-}
-
+};
 
 const serviceCounts = async (req, res) => {
   try {
     const serviceCountsbyStatus = await Service.aggregate([
       {
         $group: {
-          _id: '$status',
-          count: { $sum: 1 }
-        }
-      }
+          _id: "$status",
+          count: { $sum: 1 },
+        },
+      },
     ]);
 
     const defaultStatusCount = Object.keys(statusEnum).reduce((acc, key) => {
       acc[key] = {
         status: statusEnum[key],
-        count: 0
+        count: 0,
       };
       return acc;
     }, {});
 
-    serviceCountsbyStatus.forEach(item => {
+    serviceCountsbyStatus.forEach((item) => {
       const humanredableStatus = statusEnum[item.id] || item._id;
       defaultStatusCount[humanredableStatus] = {
         status: humanredableStatus,
-        count: item.count
+        count: item.count,
       };
     });
 
-    const readbleStatus = Object.keys(defaultStatusCount).map(key => ({
+    const readbleStatus = Object.keys(defaultStatusCount).map((key) => ({
       key,
       status: defaultStatusCount[key].status,
-      count: defaultStatusCount[key].count
+      count: defaultStatusCount[key].count,
     }));
 
     // const readbleStatus = serviceCountsbyStatus.map(item => ({
@@ -421,40 +471,40 @@ const serviceCounts = async (req, res) => {
     // }));
 
     const serviceCountsbyCategory = await Service.aggregate([
-      { $unwind: '$service_category' },
+      { $unwind: "$service_category" },
       {
         $group: {
-          _id: '$service_category',
-          count: { $sum: 1 }
-        }
-      }
+          _id: "$service_category",
+          count: { $sum: 1 },
+        },
+      },
     ]);
 
-    const defaultCategoryCount = Object.keys(serviceCategoryEnum).reduce((cat_acc, key) => {
-      cat_acc[key] = {
-        status: serviceCategoryEnum[key],
-        count: 0
-      };
+    const defaultCategoryCount = Object.keys(serviceCategoryEnum).reduce(
+      (cat_acc, key) => {
+        cat_acc[key] = {
+          status: serviceCategoryEnum[key],
+          count: 0,
+        };
 
-      return cat_acc;
-    }, {});
+        return cat_acc;
+      },
+      {}
+    );
 
-    serviceCountsbyCategory.forEach(item => {
+    serviceCountsbyCategory.forEach((item) => {
       const humanredableCategory = serviceCategoryEnum[item.id] || item._id;
       defaultCategoryCount[humanredableCategory] = {
         status: humanredableCategory,
-        count: item.count
+        count: item.count,
       };
     });
 
-    const readbleCategory = Object.keys(defaultCategoryCount).map(key => ({
+    const readbleCategory = Object.keys(defaultCategoryCount).map((key) => ({
       key,
       status: defaultCategoryCount[key].status,
-      count: defaultCategoryCount[key].count
+      count: defaultCategoryCount[key].count,
     }));
-
-
-
 
     // const readbleCategory = serviceCountsbyCategory.map(item => ({
     //   category: serviceCategoryEnum[item._id] || item._id,
@@ -467,57 +517,55 @@ const serviceCounts = async (req, res) => {
     res.status(200).json({
       total: totalServices,
       serviceCountsbyStatus: readbleStatus,
-      serviceCountsbyCategory: readbleCategory
-    })
-
+      serviceCountsbyCategory: readbleCategory,
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Internal server error', error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
-}
+};
 
 const getServiceListByStatus = async (req, res) => {
-
   try {
-    console.log(req.query.userId)
+    console.log(req.query.userId);
     // Get Subscription by userID
     const userId = req.query.userId;
-    const status = req.query.status
+    const status = req.query.status;
     if (userId) {
-      if (status != 'bookmark') {
+      if (status != "bookmark") {
         const totalServices = await Subscription.countDocuments({ userId });
-        console.log(totalServices)
-        const serviceDetails = await Subscription.find({ $and: [{ userId: req.query.userId }, { is_approved: status }] }).populate('serviceId');
+        console.log(totalServices);
+        const serviceDetails = await Subscription.find({
+          $and: [{ userId: req.query.userId }, { is_approved: status }],
+        }).populate("serviceId");
 
         if (!serviceDetails) {
-          return res.status(404).json({ message: 'No Subscription found' });
+          return res.status(404).json({ message: "No Subscription found" });
         }
-        res.json(
-          {
-            totalServices: totalServices,
-            serviceDetails
-          });
-      }
-      else {
+        res.json({
+          totalServices: totalServices,
+          serviceDetails,
+        });
+      } else {
         const totalServices = await Bookmark.countDocuments({ userId });
-        console.log(totalServices)
-        const serviceDetails = await Bookmark.find({ userId: req.query.userId }).populate('serviceId');
+        console.log(totalServices);
+        const serviceDetails = await Bookmark.find({
+          userId: req.query.userId,
+        }).populate("serviceId");
 
         if (!serviceDetails) {
-          return res.status(404).json({ message: 'No Bookmark found' });
+          return res.status(404).json({ message: "No Bookmark found" });
         }
-        res.json(
-          {
-            totalServices: totalServices,
-            serviceDetails
-          });
+        res.json({
+          totalServices: totalServices,
+          serviceDetails,
+        });
       }
-
     }
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-
 };
 
 export {
@@ -530,5 +578,5 @@ export {
   toggleFeatured,
   getFeaturedServices,
   getServiceListByStatus,
-  serviceCounts
+  serviceCounts,
 };

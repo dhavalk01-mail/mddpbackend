@@ -69,12 +69,17 @@ const serviceSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
+    live_status_url: {
+      type: String,
+    },
+    prometheus_metrics_url: {
+      type: String,
+    }
   },
   { timestamps: true },
   { versionKey: false });
 
 const Service = mongoose.model("Service", serviceSchema);
-
 
 export {
   Service,

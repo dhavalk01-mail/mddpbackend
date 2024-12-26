@@ -77,15 +77,9 @@ const PORT = process.env.NODE_LOCAL_PORT || 4000;
 /** start server only when we have valid connection */
 try {
   app.listen(PORT, () => {
-    if (process.env.ENVIRONMENT === 'PROD') {
-      var mongourl = process.env.MONGO_URL || process.env.MONGODB_PROD_URL;
-    } else {
-      var mongourl = process.env.MONGODB_DEV_URL;
-    }
-    console.log(`Server running on port: ${PORT} AND Your Database host is: ${mongourl}`);
+    console.log(`Server running on port: ${PORT}`);
  
-  })
-  // swaggerDocs(app, PORT);
+  });
 
 } catch (error) {
   console.error('Cannot connect to the server ->' + error.message);

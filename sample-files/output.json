@@ -1,0 +1,377 @@
+[
+    {
+        "title": "Caching",
+        "short_description": "Caching, leveraging tools like Redis, accelerates access to files by storing copies in a temporary location, enhancing retrieval speed.",
+        "detailed_description": "Caching, leveraging tools like Redis, accelerates access to files by storing copies in a temporary location, enhancing retrieval speed.",
+        "service_category": [
+            "common"
+        ],
+        "endpoint": "http://10.63.17.158:30981/swagger-ui/index.html",
+        "git_endpoint": "http://10.63.32.87/platformengineering/microservices/-/tree/redis-caching",
+        "helm_endpoint": "http://10.63.32.87/platformengineering/microservices/-/tree/helm_charts/redis-caching-chart",
+        "status": "active",
+        "tags": [
+            "common"
+        ]
+    },
+    {
+        "title": "Logging",
+        "short_description": "EFK(elasticsearch , fluentd, kibana) stack aggregates logs from hosts and applications which can be visualized in Kibana.",
+        "detailed_description": "EFK(elasticsearch , fluentd, kibana) stack aggregates logs from hosts and applications which can be visualized in Kibana.",
+        "service_category": [
+            "common"
+        ],
+        "endpoint": "http://10.63.17.158:30998/swagger-ui.html",
+        "git_endpoint": "http://10.63.32.87/platformengineering/microservices/-/tree/efk-logging",
+        "helm_endpoint": "http://10.63.32.87/platformengineering/microservices/-/tree/helm_charts/efk-chart",
+        "status": "active",
+        "tags": [
+            "common"
+        ]
+    },
+    {
+        "title": "Messaging",
+        "short_description": "Apache Kafka, a distributed streaming platform, facilitates real time message publishing and subscribing, enabling robust data streaming infrastructure.",
+        "detailed_description": "Apache Kafka, a distributed streaming platform, facilitates real time message publishing and subscribing, enabling robust data streaming infrastructure.",
+        "service_category": [
+            "common"
+        ],
+        "endpoint": "http://10.63.17.158:30803/swagger-ui.html",
+        "git_endpoint": "http://10.63.32.87/platformengineering/microservices/-/tree/messaging-kafka",
+        "helm_endpoint": "http://10.63.32.87/platformengineering/microservices/-/tree/helm_charts/kafka-msg-chart",
+        "status": "active",
+        "tags": [
+            "common"
+        ]
+    },
+    {
+        "title": "Secret Management",
+        "short_description": "Vault, a secure tool for secret management, enables developers to securely store and dynamically generate sensitive data like passwords and tokens.",
+        "detailed_description": "Vault, a secure tool for secret management, enables developers to securely store and dynamically generate sensitive data like passwords and tokens.",
+        "service_category": [
+            "common"
+        ],
+        "endpoint": "http://10.63.17.158:30999/swagger-ui.html",
+        "git_endpoint": "http://10.63.32.87/platformengineering/microservices/-/tree/secret-management",
+        "helm_endpoint": "http://10.63.32.87/platformengineering/microservices/-/tree/helm_charts/vault-chart",
+        "status": "active",
+        "tags": [
+            "common"
+        ]
+    },
+    {
+        "title": "Encryption-Decryption",
+        "short_description": "UbiQ facilitates secure data transfer between sources through encryption and decryption processes.",
+        "detailed_description": "UbiQ facilitates secure data transfer between sources through encryption and decryption processes.",
+        "service_category": [
+            "common"
+        ],
+        "endpoint": "http://10.63.17.158:30905/swagger-ui.html",
+        "git_endpoint": "http://10.63.32.87/platformengineering/microservices/-/tree/enc-dec",
+        "helm_endpoint": "http://10.63.32.87/platformengineering/microservices/-/tree/helm_charts/encryption-chart",
+        "status": "active",
+        "tags": [
+            "common"
+        ]
+    },
+    {
+        "title": "License Management",
+        "short_description": "KeyGen, part of License Management service, generates unique license keys for software to enable controlled access and usage based on authorized permissions and terms.",
+        "detailed_description": "KeyGen, part of License Management service, generates unique license keys for software to enable controlled access and usage based on authorized permissions and terms.",
+        "service_category": [
+            "common"
+        ],
+        "endpoint": "http://10.63.17.158:30298/swagger-ui.html",
+        "git_endpoint": "http://10.63.32.87/platformengineering/microservices/-/tree/licence-management",
+        "helm_endpoint": "http://10.63.32.87/platformengineering/microservices/-/tree/helm_charts/license-mgmt-chart",
+        "status": "active",
+        "tags": [
+            "common"
+        ]
+    },
+    {
+        "title": "Alarm Management",
+        "short_description": "Alarm Management is a service that centralizes the storage of alarms originating from various sources and of different severity levels.",
+        "detailed_description": "Alarm Management is a service that centralizes the storage of alarms originating from various sources and of different severity levels.",
+        "service_category": [
+            "common"
+        ],
+        "endpoint": "/#",
+        "git_endpoint": "/#",
+        "helm_endpoint": "/#",
+        "status": "under_development",
+        "tags": [
+            "common"
+        ]
+    },
+    {
+        "title": "Distributed Tracing",
+        "short_description": "Jaeger is an open-source distributed tracing system used for monitoring and troubleshooting microservices-based architectures.",
+        "detailed_description": "Jaeger is an open-source distributed tracing system used for monitoring and troubleshooting microservices-based architectures.",
+        "service_category": [
+            "common"
+        ],
+        "endpoint": "http://10.63.32.133:16686/",
+        "git_endpoint": "/#",
+        "helm_endpoint": "http://10.63.32.87/platformengineering/microservices/-/tree/jaeger-helm",
+        "status": "active",
+        "tags": [
+            "common"
+        ]
+    },
+    {
+        "title": "Policy Engine",
+        "short_description": "A policy engine is a software component that enforces rules or policies within a system or application.",
+        "detailed_description": "A policy engine is a software component that enforces rules or policies within a system or application.",
+        "service_category": [
+            "common"
+        ],
+        "endpoint": "/#",
+        "git_endpoint": "/#",
+        "helm_endpoint": "/#",
+        "status": "under_development",
+        "tags": [
+            "common"
+        ]
+    },
+    {
+        "title": "Metrics Engine",
+        "short_description": "A metrics engine is a tool that collects and analyzes data to generate performance indicators and insights, aiding in decision-making and optimization processes.",
+        "detailed_description": "A metrics engine is a tool that collects and analyzes data to generate performance indicators and insights, aiding in decision-making and optimization processes.",
+        "service_category": [
+            "common"
+        ],
+        "endpoint": "/#",
+        "git_endpoint": "/#",
+        "helm_endpoint": "/#",
+        "status": "under_development",
+        "tags": [
+            "common"
+        ]
+    },
+    {
+        "title": "Backup and Restore",
+        "short_description": "Backup and restore is a data management process where copies of important files or systems are made to protect against data loss.",
+        "detailed_description": "Backup and restore is a data management process where copies of important files or systems are made to protect against data loss.",
+        "service_category": [
+            "common"
+        ],
+        "endpoint": "/#",
+        "git_endpoint": "/#",
+        "helm_endpoint": "/#",
+        "status": "ideation",
+        "tags": [
+            "common"
+        ]
+    },
+    {
+        "title": "Notification",
+        "short_description": "Notifications are alerts or messages sent to users to inform them about relevant events, updates, or actions within a system or application.",
+        "detailed_description": "Notifications are alerts or messages sent to users to inform them about relevant events, updates, or actions within a system or application.",
+        "service_category": [
+            "common"
+        ],
+        "endpoint": "/#",
+        "git_endpoint": "/#",
+        "helm_endpoint": "/#",
+        "status": "ideation",
+        "tags": [
+            "common"
+        ]
+    },
+    {
+        "title": "Configuration Management",
+        "short_description": "Configuration Management is the process of systematically handling changes to a system's configuration in a way that maintains integrity over time",
+        "detailed_description": "Configuration Management is the process of systematically handling changes to a system's configuration in a way that maintains integrity over time",
+        "service_category": [
+            "common"
+        ],
+        "endpoint": "/#",
+        "git_endpoint": "/#",
+        "helm_endpoint": "/#",
+        "status": "ideation",
+        "tags": [
+            "common"
+        ]
+    },
+    {
+        "title": "Workflow Engine",
+        "short_description": "A workflow engine is a software tool that automates and manages the flow of tasks, data, and processes within an organization, streamlining operations and improving efficiency.",
+        "detailed_description": "A workflow engine is a software tool that automates and manages the flow of tasks, data, and processes within an organization, streamlining operations and improving efficiency.",
+        "service_category": [
+            "common"
+        ],
+        "endpoint": "/#",
+        "git_endpoint": "/#",
+        "helm_endpoint": "/#",
+        "status": "ideation",
+        "tags": [
+            "common"
+        ]
+    },
+    {
+        "title": "Kube State Metrics",
+        "short_description": "Kube State Metrics is a Prometheus exporter that provides metrics about the state of Kubernetes clusters.",
+        "detailed_description": "Kube State Metrics is a Prometheus exporter that provides metrics about the state of Kubernetes clusters.",
+        "service_category": [
+            "reusable"
+        ],
+        "endpoint": "/#",
+        "git_endpoint": "http://10.63.32.87/platformengineering/microservices/-/tree/kube-state-metrics",
+        "helm_endpoint": "http://10.63.32.87/platformengineering/microservices/-/tree/kube-state-metrics",
+        "status": "active",
+        "tags": [
+            "reusable"
+        ]
+    },
+    {
+        "title": "Log Shipper",
+        "short_description": "A log shipper for Kubernetes pods collects and forwards logs generated by pod containers to a centralized location for storage, monitoring, and analysis.",
+        "detailed_description": "A log shipper for Kubernetes pods collects and forwards logs generated by pod containers to a centralized location for storage, monitoring, and analysis.",
+        "service_category": [
+            "reusable"
+        ],
+        "endpoint": "/#",
+        "git_endpoint": "/#",
+        "helm_endpoint": "/#",
+        "status": "under_development",
+        "tags": [
+            "reusable"
+        ]
+    },
+    {
+        "title": "Apache Storm",
+        "short_description": "Apache Storm provides real - time stream processing capabilities for analyzing and processing Kubernetes logs at scale.",
+        "detailed_description": "Apache Storm provides real - time stream processing capabilities for analyzing and processing Kubernetes logs at scale.",
+        "service_category": [
+            "reusable"
+        ],
+        "endpoint": "/#",
+        "git_endpoint": "/#",
+        "helm_endpoint": "/#",
+        "status": "under_development",
+        "tags": [
+            "reusable"
+        ]
+    },
+    {
+        "title": "Katana Slice Manager",
+        "short_description": "Katana Slice Manager is a tool for orchestrating and managing resource allocation and workload distribution within a Kubernetes cluster, optimizing performance and resource utilization.",
+        "detailed_description": "Katana Slice Manager is a tool for orchestrating and managing resource allocation and workload distribution within a Kubernetes cluster, optimizing performance and resource utilization.",
+        "service_category": [
+            "domain_specific"
+        ],
+        "endpoint": "http://10.63.32.243:8001",
+        "git_endpoint": "http://10.63.32.87/platformengineering/microservices/-/blob/katana-slice-mngr",
+        "helm_endpoint": "http://10.63.32.87/platformengineering/microservices/-/blob/katana-slice-mngr",
+        "status": "active",
+        "tags": [
+            "domain_specific"
+        ]
+    },
+    {
+        "title": "TOSCA Orchestartor",
+        "short_description": "TOSCA Orchestration is a tool for automating the deployment, scaling, and management of complex applications using the TOSCA standard.",
+        "detailed_description": "TOSCA Orchestration is a tool for automating the deployment, scaling, and management of complex applications using the TOSCA standard.",
+        "service_category": [
+            "domain_specific"
+        ],
+        "endpoint": "/#",
+        "git_endpoint": "http://10.63.32.87/platformengineering/microservices/-/tree/orchestrator",
+        "helm_endpoint": "http://10.63.32.87/platformengineering/microservices/-/tree/orchestrator",
+        "status": "under_development",
+        "tags": [
+            "domain_specific"
+        ]
+    },
+    {
+        "title": "IPAM",
+        "short_description": "IP Address Management (IPAM) is a system for planning, tracking, and managing IP addresses on a network to ensure efficient and organized allocation.",
+        "detailed_description": "IP Address Management (IPAM) is a system for planning, tracking, and managing IP addresses on a network to ensure efficient and organized allocation.",
+        "service_category": [
+            "domain_specific"
+        ],
+        "endpoint": "#",
+        "git_endpoint": "http://10.63.32.87/platformengineering/microservices/-/tree/ipam",
+        "helm_endpoint": "http://10.63.32.87/platformengineering/microservices/-/tree/ipam",
+        "status": "under_development",
+        "tags": [
+            "domain_specific"
+        ]
+    },
+    {
+        "title": "Application LCM",
+        "short_description": "ALM is the process of managing the entire lifecycle of an application, from its initial planning and development through deployment, maintenance, and eventual retirement.",
+        "detailed_description": "ALM is the process of managing the entire lifecycle of an application, from its initial planning and development through deployment, maintenance, and eventual retirement.",
+        "service_category": [
+            "domain_specific"
+        ],
+        "endpoint": "/#",
+        "git_endpoint": "/#",
+        "helm_endpoint": "/#",
+        "status": "under_development",
+        "tags": [
+            "domain_specific"
+        ]
+    },
+    {
+        "title": "NFV Orchestrator Service",
+        "short_description": "NFV Orchestrator Service is a component of NFV that manages the deployment, scaling, and orchestration of VNFs within a network infrastructure.",
+        "detailed_description": "NFV Orchestrator Service is a component of NFV that manages the deployment, scaling, and orchestration of VNFs within a network infrastructure.",
+        "service_category": [
+            "domain_specific"
+        ],
+        "endpoint": "/#",
+        "git_endpoint": "/#",
+        "helm_endpoint": "/#",
+        "status": "under_development",
+        "tags": [
+            "domain_specific"
+        ]
+    },
+    {
+        "title": "Istio",
+        "short_description": "Istio is an open-source service mesh platform that enables you to connect, secure, and manage microservices across a distributed system.",
+        "detailed_description": "Istio is an open-source service mesh platform that enables you to connect, secure, and manage microservices across a distributed system.",
+        "service_category": [
+            "domain_specific"
+        ],
+        "endpoint": "/#",
+        "git_endpoint": "http://10.63.32.87/platformengineering/microservices/-/tree/istio",
+        "helm_endpoint": "http://10.63.32.87/platformengineering/microservices/-/tree/istio",
+        "status": "active",
+        "tags": [
+            "domain_specific"
+        ]
+    },
+    {
+        "title": "Edge Proxy (Envoy)",
+        "short_description": "Envoy is a high-performance edge proxy and communication bus designed for cloud-native applications, providing advanced load balancing, observability, and security features.",
+        "detailed_description": "Envoy is a high-performance edge proxy and communication bus designed for cloud-native applications, providing advanced load balancing, observability, and security features.",
+        "service_category": [
+            "domain_specific"
+        ],
+        "endpoint": "/#",
+        "git_endpoint": "http://10.63.32.87/platformengineering/microservices/-/tree/envoy",
+        "helm_endpoint": "http://10.63.32.87/platformengineering/microservices/-/tree/envoy",
+        "status": "under_development",
+        "tags": [
+            "domain_specific"
+        ]
+    },
+    {
+        "title": "Vitess",
+        "short_description": "Vitess is an open-source database clustering system for horizontal scaling of MySQL through sharding, providing features like automatic sharding and transparent failover.",
+        "detailed_description": "Vitess is an open-source database clustering system for horizontal scaling of MySQL through sharding, providing features like automatic sharding and transparent failover.",
+        "service_category": [
+            "domain_specific"
+        ],
+        "endpoint": "/#",
+        "git_endpoint": "/#",
+        "helm_endpoint": "/#",
+        "status": "under_development",
+        "tags": [
+            "domain_specific"
+        ]
+    }
+]
