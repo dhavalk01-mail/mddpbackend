@@ -6,17 +6,18 @@ import {
 import Subscription from "../models/subscriptionModel.js";
 import { Bookmark } from "../models/bookmarkModel.js";
 import zod from "zod";
+import { Notification } from "../models/notificationModel.js";
 
 const schema = zod.object({
   title: zod.string().trim(),
   short_description: zod.string(),
   detailed_description: zod.string(),
-  service_category: zod.array(zod.enum(Object.keys(serviceCategoryEnum))),
-  endpoint: zod.string(),
-  git_endpoint: zod.string(),
-  helm_endpoint: zod.string(),
+  service_category: zod.array(zod.enum(Object.keys(serviceCategoryEnum))).min(1, "Service category cannot be empty"),
+  endpoint: zod.string().url("Must be a valid URL"),
+  git_endpoint: zod.string().url("Must be a valid URL"),
+  helm_endpoint: zod.string().url("Must be a valid URL"),  
   status: zod.enum(Object.keys(statusEnum)),
-  tags: zod.array(zod.string()),
+  tags: zod.array(zod.string()).min(1, "Tag cannot be empty"),
 });
 
 const updateService = async (req, res) => {
@@ -34,7 +35,7 @@ const updateService = async (req, res) => {
     const updServ = await Service.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { 
+      {
         new: true, // Return updated document
         runValidators: true // Run model validators
       }
@@ -54,9 +55,9 @@ const updateService = async (req, res) => {
     res.status(200).json(serviceResponse);
 
   } catch (error) {
-    res.status(500).json({ 
+    res.status(500).json({
       message: "Error updating service",
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -568,6 +569,55 @@ const getServiceListByStatus = async (req, res) => {
   }
 };
 
+const addBulkJsonServices = async (req, res) => {
+  // Array to track created services for rollback
+  const createdServices = [];
+
+  try {
+    const jsonData = req.body.jsonText;
+
+    // Validate input
+    if (!Array.isArray(jsonData)) {
+      return res.status(400).json({ message: "Input must be an array of services" });
+    }
+
+    // Validate each service object before saving any
+    for (const serviceData of jsonData) {
+      const validationService = schema.safeParse(serviceData);      
+      if (!validationService.success) {
+        return res.status(404).json({
+          err: "incorrect inputs FOR " + JSON.stringify(serviceData).replace(/\\/g, ''),
+          msg: validationService.error.issues,
+        });
+      }
+    }
+
+    // Create services after validation passes
+    for (const serviceData of jsonData) {
+      const newService = new Service(serviceData);
+      const savedService = await newService.save();
+      createdServices.push(savedService);
+    }
+
+    res.status(201).json({
+      message: "Services added successfully",
+      count: createdServices.length
+    });
+
+  } catch (error) {
+    // Rollback - delete any services that were created
+    for (const service of createdServices) {
+      await Service.findByIdAndDelete(service._id);
+    }
+
+    console.error("Error adding services:", error);
+    res.status(500).json({
+      message: "Error adding services. All changes rolled back.",
+      error: error.message
+    });
+  }
+};
+
 export {
   getServices,
   getServicesDetails,
@@ -579,4 +629,5 @@ export {
   getFeaturedServices,
   getServiceListByStatus,
   serviceCounts,
+  addBulkJsonServices
 };

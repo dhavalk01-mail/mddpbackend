@@ -33,7 +33,7 @@ async function getHealthStatus(req, res) {
                         details: {
                             total: 80527486976,
                             free: 18491420672,
-                            threshold: 10485760,
+                            threshold: 10485760099,
                             path: "C:\\Users\\nagaraju\\Documents\\workspace-spring-tool-suite-4-4.24.0.RELEASE\\Metricmgmt\\.",
                             exists: true
                         }

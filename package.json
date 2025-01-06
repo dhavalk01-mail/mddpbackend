@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js",
+    "dev": "npm run swagger &&  nodemon index.js",
     "swagger": "node ./swagger/swagger.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

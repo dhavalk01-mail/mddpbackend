@@ -1,7 +1,7 @@
 import Subscription from "../models/subscriptionModel.js";
 import zod from "zod";
 import { Notification } from "../models/notificationModel.js";
-import { Service } from "../models/serviceModel.js";
+import { Service, serviceCategoryEnum, statusEnum } from '../models/serviceModel.js';
 
 const schema = zod.object({
   userId: zod.string(),
@@ -119,6 +119,7 @@ const getSubscription = async (req, res) => {
       res.json({
         totalSubscription: totalSub,
         subscription
+
       });
     }
   } catch (error) {
@@ -126,7 +127,39 @@ const getSubscription = async (req, res) => {
   }
 };
 
+
+// Get subscription services for the user
+const getUserSubscriptionServices = async (req, res) => {
+
+  const userId = req.params.userId;
+
+  try {
+    const services = await Subscription.find({ userId, is_approved: "approved" }).populate('serviceId');
+    // Convert into Human Readble Format
+    const serviceResponce = services.map(service => {
+      if (!service.serviceId) {
+        return null;
+      }
+      return {
+        ...service.serviceId.toObject(),
+        service_category: service.serviceId.service_category.map(sc => serviceCategoryEnum[sc]),
+        status: statusEnum[service.serviceId.status],
+        subscriptionId: service._id,
+        createdAt: service.createdAt,
+        updatedAt: service.updatedAt,
+      };
+    }).filter(service => service !== null);
+    res.status(200).json({
+      services: serviceResponce
+    });
+
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+};
+
 export {
   addSubscription,
   getSubscription,
+  getUserSubscriptionServices
 };

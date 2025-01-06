@@ -11,12 +11,14 @@ import {
   getFeaturedServices,
   //countServiceByCategory,
   serviceCounts,
-  getServiceListByStatus
+  getServiceListByStatus,
+  addBulkJsonServices
 } from "../controllers/serviceController.js"
 
 import {
   addSubscription,
   getSubscription,
+  getUserSubscriptionServices,
 } from "../controllers/subscriptionController.js"
 
 import { toggleBookmark, getBookmark } from "../controllers/bookmarkController.js"
@@ -61,6 +63,9 @@ router.delete('/deleteService/:id',
 router.get('/getServiceListByStatus',
   // #swagger.tags = ['Services'] 
   getServiceListByStatus)
+router.post('/addBulkJsonServices',
+  // #swagger.tags = ['Services']
+  addBulkJsonServices);
 
 // toggleFeatured
 router.patch('/toggleFeatured/:id',
@@ -80,6 +85,9 @@ router.get('/getSubscription',
 router.get('/getSubscription/:id',
   // #swagger.tags = ['Subscription']
   getSubscription)
+router.get('/getUserSubscriptionServices/:userId',
+  // #swagger.tags = ['Subscription']
+  getUserSubscriptionServices)
 
 //Bookmark
 router.post("/toggleBookmark/:userId/:serviceId",

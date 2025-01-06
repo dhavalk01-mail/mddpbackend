@@ -6,19 +6,13 @@ const swaggerDocument = {
         version: '1.0.0',
         description: 'MDDP UI API - manage services data, subscription and notification data'
     },
-    host: "10.63.18.82:4000",
+    host: "10.63.16.153:32744",
     basePath: "/api",
     schemes: ["http"],
     consumes: ["application/json"],
     produces: ["application/json"],
     securityDefinitions: {},
-    tags: [
-        { name: 'Services' },
-        { name: "Subscription" },
-        { name: "Notification" },
-        { name: "Bookmark" },
-        { name: "Report" },
-      ],
+    tags: {},
     definitions: {},
 };
 

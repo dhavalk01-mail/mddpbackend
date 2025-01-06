@@ -12,13 +12,7 @@ const swaggerDocument = {
     consumes: ["application/json"],
     produces: ["application/json"],
     securityDefinitions: {},
-    tags: [
-        { name: 'Services' },
-        { name: "Subscription" },
-        { name: "Notification" },
-        { name: "Bookmark" },
-        { name: "Report" },
-      ],
+    tags: {},
     definitions: {},
 };
 

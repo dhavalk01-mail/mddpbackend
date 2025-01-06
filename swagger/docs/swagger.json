@@ -10,23 +10,7 @@
       "url": "https://mddpbackend.onrender.com/api"
     }
   ],
-  "tags": [
-    {
-      "name": "Services"
-    },
-    {
-      "name": "Subscription"
-    },
-    {
-      "name": "Notification"
-    },
-    {
-      "name": "Bookmark"
-    },
-    {
-      "name": "Report"
-    }
-  ],
+  "tags": {},
   "securityDefinitions": {},
   "paths": {
     "/getServices/{id}": {
@@ -314,6 +298,42 @@
         }
       }
     },
+    "/addBulkJsonServices": {
+      "post": {
+        "tags": [
+          "Services"
+        ],
+        "description": "",
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "jsonText": {
+                    "example": "any"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/toggleFeatured/{id}": {
       "patch": {
         "tags": [
@@ -439,6 +459,32 @@
           },
           "404": {
             "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/getUserSubscriptionServices/{userId}": {
+      "get": {
+        "tags": [
+          "Subscription"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
           },
           "500": {
             "description": "Internal Server Error"
