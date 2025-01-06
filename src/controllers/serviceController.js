@@ -529,14 +529,14 @@ const serviceCounts = async (req, res) => {
 
 const getServiceListByStatus = async (req, res) => {
   try {
-    console.log(req.query.userId);
+    // console.log(req.query.userId);
     // Get Subscription by userID
     const userId = req.query.userId;
     const status = req.query.status;
     if (userId) {
       if (status != "bookmark") {
         const totalServices = await Subscription.countDocuments({ userId });
-        console.log(totalServices);
+        // console.log(totalServices);
         const serviceDetails = await Subscription.find({
           $and: [{ userId: req.query.userId }, { is_approved: status }],
         }).populate("serviceId");
@@ -550,7 +550,7 @@ const getServiceListByStatus = async (req, res) => {
         });
       } else {
         const totalServices = await Bookmark.countDocuments({ userId });
-        console.log(totalServices);
+        // console.log(totalServices);
         const serviceDetails = await Bookmark.find({
           userId: req.query.userId,
         }).populate("serviceId");
