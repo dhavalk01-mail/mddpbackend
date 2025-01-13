@@ -9,7 +9,7 @@ async function getHealthStatus(req, res) {
             const url = req.query.url;
             if (!url || !url.startsWith("http")) {
                 return res.status(400).json({
-                    status: "ERROR", 
+                    status: "ERROR",
                     error: !url ? "URL parameter is required" : "Invalid URL"
                 });
             }
@@ -60,11 +60,11 @@ async function getMetricsController(req, res) {
             const url = req.query.url;
             if (!url || !url.startsWith("http")) {
                 return res.status(400).json({
-                    status: "ERROR", 
+                    status: "ERROR",
                     error: !url ? "URL parameter is required" : "Invalid URL"
                 });
             }
-            
+
             // Get metrics data from URL using async/await
             const response = await fetch(url);
             if (!response.ok) {
@@ -98,8 +98,36 @@ function dataManipulation(data) {
     return data;
 }
 
+async function getGrafanaURL(req, res) {
+
+    // Validate URL parameter also validate URL value
+    const targetUrl = req.query.url;
+    if (!targetUrl || !targetUrl.startsWith("http")) {
+        return res.status(400).json({
+            status: "ERROR", 
+            error: !targetUrl ? "URL parameter is required" : "Invalid URL"
+        });
+    }
+
+    try {
+        const response = await fetch(targetUrl);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.text();
+        res.status(200).send(data);
+    } catch (err) {
+        console.error('Error fetching data:', err);
+        res.status(500).json({
+            status: "UNAVAILABLE",
+            error: err.message
+        });
+    }
+}
+
 
 export {
     getMetricsController,
-    getHealthStatus
+    getHealthStatus,
+    getGrafanaURL
 }

@@ -29,6 +29,7 @@ import {
   getPopularSubscription,
   getMonthWiseSubscription
 } from "../controllers/reportController.js"
+
 import {
   getPendingSubscription,
   updateSubscriptionStatus,
@@ -39,7 +40,8 @@ import {
   markOneNotificationRead,
   allReadNotifications
 } from "../controllers/notificationController.js"
-import { getMetricsController, getHealthStatus } from "../controllers/matricsController.js"
+
+import { getMetricsController, getHealthStatus, getGrafanaURL } from "../controllers/matricsController.js"
 
 const router = express.Router({ mergeParams: true })
 
@@ -160,5 +162,9 @@ router.get('/metrics',
 router.get('/healthstatus',
   // #swagger.tags = ['Metrics Data']
   getHealthStatus);
+
+router.get('/grafana',
+  // #swagger.tags = ['Metrics Data']
+  getGrafanaURL);
 
 export default router
