@@ -74,6 +74,9 @@ const serviceSchema = new mongoose.Schema(
     },
     prometheus_metrics_url: {
       type: String,
+    },
+    grafana_iframe_url: {
+      type: String,
     }
   },
   { timestamps: true },

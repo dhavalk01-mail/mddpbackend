@@ -290,6 +290,7 @@ const addService = async (req, res) => {
       is_featured: req.body.is_featured,
       live_status_url: req.body.live_status_url,
       prometheus_metrics_url: req.body.prometheus_metrics_url,
+      grafana_iframe_url: req.body.grafana_iframe_url,
     });
 
     // Convert into Human Readble Format

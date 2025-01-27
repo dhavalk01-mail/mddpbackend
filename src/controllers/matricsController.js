@@ -1,10 +1,11 @@
+import axios from 'axios';
 import fs from 'fs';
 import parsePrometheusTextFormat from 'parse-prometheus-text-format';
 
 // health STATUS check
 async function getHealthStatus(req, res) {
     try {
-        if (process.env.ENVIRONMENT === 'PROD') {
+        if (process.env.ENVIRONMENT !== 'DEV') {
             // Validate URL parameter also validate URL value
             const url = req.query.url;
             if (!url || !url.startsWith("http")) {
@@ -55,7 +56,7 @@ async function getHealthStatus(req, res) {
 
 async function getMetricsController(req, res) {
     try {
-        if (process.env.ENVIRONMENT === 'PROD') {
+        if (process.env.ENVIRONMENT !== 'DEV') {
             // Validate URL parameter also validate URL value
             const url = req.query.url;
             if (!url || !url.startsWith("http")) {
@@ -98,6 +99,7 @@ function dataManipulation(data) {
     return data;
 }
 
+/*
 async function getGrafanaURL(req, res) {
 
     // Validate URL parameter also validate URL value
@@ -124,7 +126,52 @@ async function getGrafanaURL(req, res) {
         });
     }
 }
+*/
 
+async function getGrafanaURL(req, res) {
+
+    // Validate URL parameter also validate URL value
+    const targetUrl = req.query.url;
+    // const targetUrl = 'http://10.63.34.245:3000/dashboard/snapshot/avF9ZBlUUXeunQ84NQwx8AXFSJa2zE0o?kiosk';
+    if (!targetUrl || !targetUrl.startsWith("http")) {
+        return res.status(400).json({
+            status: "ERROR", 
+            error: !targetUrl ? "URL parameter is required" : "Invalid URL"
+        });
+    }
+
+    /*
+    try {
+        const response = await fetch(targetUrl);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.text();
+        console.log(data);
+        
+        res.status(200).send(data);
+    } catch (err) {
+        console.error('Error fetching data:', err);
+        res.status(500).json({
+            status: "UNAVAILABLE",
+            error: err.message
+        });
+    }
+    */
+
+    if (!targetUrl) {
+        return res.status(400).send('Error: "url" query parameter is required.');
+    }
+ 
+    try {
+        const response = await axios.get(targetUrl, { responseType: 'stream' });
+        response.data.pipe(res);
+    } catch (error) {
+        console.error(`Error fetching the target URL: ${error.message}`);
+        res.status(500).send('Error fetching the target URL.');
+    }
+
+}
 
 export {
     getMetricsController,

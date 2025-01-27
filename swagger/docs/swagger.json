@@ -194,6 +194,9 @@
                   },
                   "prometheus_metrics_url": {
                     "example": "any"
+                  },
+                  "grafana_iframe_url": {
+                    "example": "any"
                   }
                 }
               }
@@ -984,9 +987,6 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "OK"
-          },
           "400": {
             "description": "Bad Request"
           },
