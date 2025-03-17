@@ -43,6 +43,16 @@ import {
 
 import { getMetricsController, getHealthStatus, getGrafanaURL } from "../controllers/matricsController.js"
 
+import {
+  publishComposableApp,
+  getInactiveApps,
+  getActiveApps,
+  publishInactiveApp,
+  updateComposableApp,
+  deleteComposableApp,
+  getComposableAppById
+} from "../controllers/composableAppsController.js"
+
 const router = express.Router({ mergeParams: true })
 
 // services
@@ -166,5 +176,28 @@ router.get('/healthstatus',
 router.get('/grafana',
   // #swagger.tags = ['Metrics Data']
   getGrafanaURL);
+
+//composableAppController
+router.post('/publishComposableApp',
+  // #swagger.tags = ['Composable Apps']
+  publishComposableApp);
+router.get('/getInactiveApps',
+  // #swagger.tags = ['Composable Apps']
+  getInactiveApps);
+router.get('/getActiveApps',
+  // #swagger.tags = ['Composable Apps']
+  getActiveApps);
+router.patch('/publishInactiveApp/:id',
+  // #swagger.tags = ['Composable Apps']
+  publishInactiveApp);
+router.put('/updateComposableApp/:id',
+  // #swagger.tags = ['Composable Apps']
+  updateComposableApp);
+router.delete('/deleteComposableApp/:id',
+  // #swagger.tags = ['Composable Apps']
+  deleteComposableApp);
+router.get('/getComposableAppById/:id',
+  // #swagger.tags = ['Composable Apps']
+  getComposableAppById);
 
 export default router

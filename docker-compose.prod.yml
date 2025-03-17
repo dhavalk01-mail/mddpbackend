@@ -2,6 +2,7 @@ version: '3.9'
 services:
   node-app:
     restart: always
+    container_name: mddpnodebackend
     build:
       context: .
       dockerfile: Dockerfile
@@ -10,12 +11,13 @@ services:
     depends_on:
       - mongo
     environment:
-      MONGO_URL: mongodb://mongo:27017/mddpdb_test
-    image: mddpnodebackend:test
+      MONGO_URL: mongodb://10.63.16.153:32742/mddpdb_test
+    image: 10.63.20.108/nextgen/mddpnodebackend:v4-test
 
   mongo:
     image: mongo
     restart: always
+    container_name: mongo
     environment:
       MONGO_INITDB_DATABASE: mddpdb_test
     ports:
@@ -26,15 +28,16 @@ services:
   mongo-express:
     image: mongo-express
     restart: always
+    container_name: mongo-express
+    depends_on:
+      - mongo
     ports:
       - 8081:8081
     environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
-      ME_CONFIG_MONGODB_ADMINPASSWORD: admin
-      ME_CONFIG_MONGODB_AUTH_DATABASE: admin
-      ME_CONFIG_MONGODB_ENABLE_ADMIN: true
-      ME_CONFIG_MONGODB_URL: mongodb://mongo:27017/mddpdb_test
+      ME_CONFIG_MONGODB_SERVER: '10.63.16.153'
+      ME_CONFIG_MONGODB_PORT: 32742
       ME_CONFIG_BASICAUTH: false
+      
 volumes:
   mongo_data:
     driver: local

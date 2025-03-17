@@ -53,7 +53,6 @@ async function getHealthStatus(req, res) {
     }
 }
 
-
 async function getMetricsController(req, res) {
     try {
         if (process.env.ENVIRONMENT !== 'DEV') {
@@ -73,14 +72,14 @@ async function getMetricsController(req, res) {
             }
 
             const metricsData = await response.text();
-            const parsedMetrics = dataManipulation(parsePrometheusTextFormat(metricsData));
+            const parsedMetrics = parsePrometheusTextFormat(dataManipulation(metricsData));
             return res.status(200).json(parsedMetrics);
 
         } else {
             // Development environment response with error handling
             try {
                 const metricsStr = fs.readFileSync('./sample-files/metrics.txt', 'utf8');
-                const parsed = dataManipulation(parsePrometheusTextFormat(metricsStr));
+                const parsed = parsePrometheusTextFormat(dataManipulation(metricsStr));
                 return res.status(200).json(parsed);
             } catch (err) {
                 throw new Error(`Failed to read metrics file: ${err.message}`);
@@ -96,7 +95,14 @@ async function getMetricsController(req, res) {
 }
 
 function dataManipulation(data) {
-    return data;
+    const removestring = ['tomcat_sessions_created_sessions_total', 'tomcat_sessions_expired_sessions_total', 'tomcat_sessions_alive_max_seconds', 'tomcat_sessions_active_current_sessions', 'tomcat_sessions_active_max_sessions', 'tomcat_sessions_rejected_sessions_total', 'http_server_requests_seconds'];
+
+    let dataArray = data.split('\n');
+    let removelines = dataArray.filter(line => removestring.some(remove => line.includes(remove)));
+    let finaldata = dataArray.filter(line => !removelines.includes(line));
+    
+    finaldata = finaldata.join('\n');
+    return finaldata;
 }
 
 /*
@@ -135,7 +141,7 @@ async function getGrafanaURL(req, res) {
     // const targetUrl = 'http://10.63.34.245:3000/dashboard/snapshot/avF9ZBlUUXeunQ84NQwx8AXFSJa2zE0o?kiosk';
     if (!targetUrl || !targetUrl.startsWith("http")) {
         return res.status(400).json({
-            status: "ERROR", 
+            status: "ERROR",
             error: !targetUrl ? "URL parameter is required" : "Invalid URL"
         });
     }
@@ -162,7 +168,7 @@ async function getGrafanaURL(req, res) {
     if (!targetUrl) {
         return res.status(400).send('Error: "url" query parameter is required.');
     }
- 
+
     try {
         const response = await axios.get(targetUrl, { responseType: 'stream' });
         response.data.pipe(res);

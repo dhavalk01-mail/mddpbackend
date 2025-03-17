@@ -12,7 +12,7 @@ const notificationSchema = new mongoose.Schema(
         },
         type: {
             type: String,
-            enum: ['service'],
+            enum: ['service', 'apps'],
             required: true,
             default: 'service'
         },
