@@ -1176,6 +1176,9 @@
                   },
                   "demoLink": {
                     "example": "any"
+                  },
+                  "status": {
+                    "example": "any"
                   }
                 }
               }

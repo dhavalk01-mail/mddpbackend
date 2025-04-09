@@ -45,7 +45,7 @@ const publishComposableApp = async (req, res) => {
 const updateComposableApp = async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, description, designPattern, commonServices, languagesUsed, demoVideoLink, demoLink } = req.body;
+        const { title, description, designPattern, commonServices, languagesUsed, demoVideoLink, demoLink, status } = req.body;
         const updatedComposableApp = await CompsableApp.findByIdAndUpdate(id, {
             title,
             description,
@@ -53,7 +53,8 @@ const updateComposableApp = async (req, res) => {
             commonServices,
             languagesUsed,
             demoVideoLink,
-            demoLink
+            demoLink,
+            status
         }, { new: true });
         if (!updatedComposableApp) {
             return res.status(400).json({ message: 'Failed to update composable app' });
